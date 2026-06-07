@@ -598,9 +598,12 @@ function startCountdown() {
             isPlaying = true;
             isPaused = false;
             isWaveTransition = false;
+            
+            // رفع کامل باگ: دقیقاً بعد از اتمام شمارش معکوس امواج ساخته می‌شوند
+            spawnWave(); 
+            
             playAudio('gamestart'); 
             startBGM();
-            // رفع باگ گیم‌اور ناگهانی: زمان پایه را دقیقاً در همین فریم صفر می‌کنیم تا پرش سرعت رخ ندهد
             lastTime = performance.now();
             requestAnimationFrame(loop);
         }
@@ -620,7 +623,7 @@ function triggerLevelReward() {
         spawnWave();
         isWaveTransition = false;
         btnPause.style.display = 'block';
-        lastTime = performance.now(); // ریست زمان بعد از اتمام نمایش جایزه موج
+        lastTime = performance.now(); 
     }, 2200); 
 }
 
@@ -642,7 +645,7 @@ function resetGame() {
     particles = [];
     isWaveTransition = false;
     isPaused = false;
-    spawnWave();
+    // حذف تولید اولیه موج از اینجا جهت هماهنگی کامل با تایمر معکوس
     startCountdown();
 }
 
@@ -784,7 +787,7 @@ if (!userId || !ALLOWED_IDS.includes(Number(userId))) {
     document.getElementById('lockScreen').style.display = 'none';
     document.getElementById('gameContainer').style.display = 'block';
     resizeCanvas();
-    spawnWave();
+    // حذف spawnWave متناقض اولیه از لود بدنه اصلی وب‌اپلیکیشن جهت فیکس مشکل کرش تایمر
 }
 
 </script>
