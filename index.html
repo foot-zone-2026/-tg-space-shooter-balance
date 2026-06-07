@@ -289,7 +289,6 @@ function resizeCanvas() {
     }
 }
 
-// مستر گین و بستر بهینه صوتی جهت خروجی ۱۰۰٪ صاف بدون افت فریم
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const masterGain = audioCtx.createGain();
 masterGain.gain.setValueAtTime(2.8, audioCtx.currentTime); 
@@ -303,7 +302,6 @@ function playAudio(type) {
     const now = audioCtx.currentTime;
     
     if (type === 'shoot') {
-        // سنتز صوتی پیشرفته: لیزر علمی تخیلی و بسیار پرانرژی تریگر (جذاب‌تر و زنده)
         const osc = audioCtx.createOscillator();
         const oscMod = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -327,7 +325,6 @@ function playAudio(type) {
         osc.stop(now + 0.12); oscMod.stop(now + 0.12);
     } 
     else if (type === 'explosion') {
-        // افکت انفجار با فرکانس‌های ادغامی کوبنده و نویز مانند (بسیار سنگین‌تر و مهیج‌تر)
         const osc = audioCtx.createOscillator();
         const oscHigh = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -402,12 +399,10 @@ function playAudio(type) {
 
 function startBGM() {
     stopBGM();
-    // بهینه‌سازی ریتم آهنگ بازی: فواصل هارمونیک جذاب‌تر و نت‌های ریتمیک منظم برای رفع کامل تپق یا گیر صوتی
     bgmInterval = setInterval(() => {
         if (!isPlaying || isWaveTransition || isPaused) return; 
         const now = audioCtx.currentTime;
         
-        // بیس فضایی سایبرپانک جذاب
         const notes = [160, 200, 160, 240, 180, 200, 260, 180];
         const freq = notes[bgmStep % notes.length];
         
@@ -431,7 +426,7 @@ function startBGM() {
         osc.start(now); oscHarmonic.start(now);
         osc.stop(now + 0.18); oscHarmonic.stop(now + 0.18);
         bgmStep++;
-    }, 240); // ریتم کمی سریع‌تر و مهیج‌تر شد
+    }, 240); 
 }
 
 function stopBGM() {
@@ -705,8 +700,9 @@ function intersects(x1, y1, w1, h1, x2, y2, w2, h2) {
 function loop(currentTime) {
     if (!isPlaying || isPaused) return;
 
+    // تکنیک اختصاصی کلمپ کلاک صلب جهت از بین بردن هر نوع پرش تصویری در صفحه نمایش‌های مختلف
     let dt = (currentTime - lastTime) / 1000;
-    if (dt > 0.05) dt = 0.05; // بهینه‌سازی دقیق‌تر فریم ریت جهت کنترل پایداری
+    if (dt > 0.03) dt = 0.03; 
     lastTime = currentTime;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -718,10 +714,13 @@ function loop(currentTime) {
         if(star.y > canvas.height) star.y = 0;
     });
 
+    // بهینه‌سازی زباله‌روبی ذرات به محض مرگ جهت حفظ ثبات مموری موبایل
     for (let i = particles.length - 1; i >= 0; i--) {
         particles[i].update(dt);
         particles[i].draw();
-        if (particles[i].alpha <= 0) particles.splice(i, 1);
+        if (particles[i].alpha <= 0) {
+            particles.splice(i, 1);
+        }
     }
 
     if (!isWaveTransition) {
@@ -826,7 +825,7 @@ for(let i=0; i<45; i++) {
     stars.push({ x: Math.random()*500, y: Math.random()*800, size: Math.random()*1.3 + 0.4, speed: Math.random()*40 + 15 });
 }
 
-const ALLOWED_IDS = [2049044424]; // آیدی عددی خود را جایگزین کنید
+const ALLOWED_IDS = [2049044424]; 
 
 window.Telegram.WebApp.ready();
 window.Telegram.WebApp.expand();
