@@ -34,6 +34,7 @@
             height: 100vh;
             background: #020407;
             overflow: hidden;
+            display: none; /* تا زمان تایید آیدی کاملا مخفی می ماند */
         }
         canvas {
             width: 100%;
@@ -47,7 +48,7 @@
             align-items: center;
             width: 100%;
             position: absolute;
-            bottom: 45px; /* دکمه ها به پایین ترین بخش منتقل شدند */
+            bottom: 20px; /* دکمه ها باز هم پایین تر آورده شدند */
             padding: 0 25px;
             pointer-events: none;
             z-index: 5;
@@ -108,7 +109,7 @@
             background: rgba(255, 255, 255, 0.25);
         }
 
-        /* هم‌ترازی دقیق و ۱۰۰٪ وسط صفحات منو */
+        /* وسط چین سازی مطلق هندسی برای صفحات منو */
         .screen-overlay {
             position: absolute;
             top: 0;
@@ -120,6 +121,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            padding: 20px;
             z-index: 10;
         }
         
@@ -283,9 +285,8 @@ function resizeCanvas() {
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = canvas.parentElement.clientHeight;
 }
-resizeCanvas();
 
-// --- سیستم صوتی با تراز متعادل صوتی (Audio Balancing) ---
+// --- سیستم صوتی با موسیقی متن تقویت شده و بالانس شده ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let bgmInterval = null;
 let bgmStep = 0;
@@ -300,7 +301,7 @@ function playAudio(type) {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(600, now);
         osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
-        gain.gain.setValueAtTime(0.12, now); // هم‌تراز شده
+        gain.gain.setValueAtTime(0.12, now); 
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.08);
@@ -311,7 +312,7 @@ function playAudio(type) {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(150, now);
         osc.frequency.linearRampToValueAtTime(20, now + 0.18);
-        gain.gain.setValueAtTime(0.38, now); // تقویت شده برای تعادل با بقیه صداها
+        gain.gain.setValueAtTime(0.38, now); 
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.18);
@@ -321,13 +322,12 @@ function playAudio(type) {
         const gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(500, now);
-        gain.gain.setValueAtTime(0.18, now); // هم‌تراز شده
+        gain.gain.setValueAtTime(0.18, now); 
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.12);
     }
     else if (type === 'gamestart') {
-        // صدای جدید افکت شروع ماموریت بازی پس از اتمام شماره ۳
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
@@ -344,7 +344,7 @@ function playAudio(type) {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(130, now);
         osc.frequency.linearRampToValueAtTime(30, now + 0.5);
-        gain.gain.setValueAtTime(0.25, now); // هم‌تراز شده
+        gain.gain.setValueAtTime(0.25, now); 
         gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.5);
@@ -355,7 +355,7 @@ function playAudio(type) {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(460, now);
         osc.frequency.setValueAtTime(920, now + 0.1);
-        gain.gain.setValueAtTime(0.22, now); // هم‌تراز شده
+        gain.gain.setValueAtTime(0.22, now); 
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.2);
@@ -374,7 +374,7 @@ function startBGM() {
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.06, now); // ولوم ایده آل موزیک پس زمینه بدون نویز
+        gain.gain.setValueAtTime(0.35, now); // صدای اصلی بازی (BGM) به شدت تقویت و هم‌تراز با صدای سوخت شد
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         
         osc.connect(gain); gain.connect(audioCtx.destination);
@@ -600,7 +600,7 @@ function startCountdown() {
             isPlaying = true;
             isPaused = false;
             isWaveTransition = false;
-            playAudio('gamestart'); // پخش افکت صوتی شروع بازی پس از اتمام شماره معکوس
+            playAudio('gamestart'); 
             startBGM();
             lastTime = performance.now();
             requestAnimationFrame(loop);
@@ -770,16 +770,23 @@ btnShoot.addEventListener('touchstart', (e) => { e.preventDefault(); shootLaser(
 startBtn.addEventListener('click', resetGame);
 restartBtn.addEventListener('click', resetGame);
 
-// --- بررسی آیدی تلگرام برای اجرای بازی ---
-const ALLOWED_IDS = [123456789]; // آیدی عددی تلگرام خود را اینجا وارد کنید
+// --- ارتقا و حساس‌سازی منطق سیستم احراز هویت آیدی تلگرام ---
+const ALLOWED_IDS = [2049044424]; // آیدی عددی خود را جایگزین کنید
+
 window.Telegram.WebApp.ready();
 window.Telegram.WebApp.expand();
 
 const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
-if (!userId || !ALLOWED_IDS.includes(userId)) {
+
+// بررسی فوق‌العاده حساس: اگر آیدی وجود نداشته باشد یا در آرایه مجاز نباشد، بلافاصله قفل کامل اعمال می‌شود
+if (!userId || !ALLOWED_IDS.includes(Number(userId))) {
     document.getElementById('lockScreen').style.display = 'flex';
     document.getElementById('gameContainer').style.display = 'none';
 } else {
+    // فقط و فقط در صورت تایید آیدی، ظرف بازی نمایش داده شده و امواج لود می‌شوند
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('gameContainer').style.display = 'block';
+    resizeCanvas();
     spawnWave();
 }
 
