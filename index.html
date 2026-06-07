@@ -458,7 +458,7 @@ const COLOR_PALETTES = [
     { body: '#ff003c', laser: '#ff003c', detail: '#ff6b8b' }, 
     { body: '#ff6a00', laser: '#ff6a00', detail: '#ffb380' }, 
     { body: '#00cc66', laser: '#00cc66', detail: '#85ffd6' }, 
-    { body: '#3333ff', laser: '#3333ff', detail: '#9999ff' }, 
+    { body: '#3333ff', stroke: '#3333ff', detail: '#9999ff' }, 
     { body: '#9d00ff', laser: '#9d00ff', detail: '#df99ff' }, 
     { body: '#ff00b7', laser: '#ff00b7', detail: '#ff99e5' }, 
     { body: '#00b7ff', laser: '#00b7ff', detail: '#99e5ff' }, 
@@ -578,7 +578,6 @@ class Enemy {
 }
 
 function spawnWave() {
-    // اصلاح اصلی منحنی سختی: مرحله اول فقط ۲ دشمن دارد و در هر مرحله ۱ یا ۲ دشمن اضافه می‌شود
     let count = 1 + level; 
     let palette = COLOR_PALETTES[(level - 1) % COLOR_PALETTES.length];
     currentEnemyColor = palette.body;
@@ -587,7 +586,6 @@ function spawnWave() {
 
     for (let i = 0; i < count; i++) {
         let x = Math.random() * (canvas.width - 80) + 40;
-        // چیدمان ترتیبی عمودی برای مراحل بالاتر تا دشمنان به علت کثرت روی یکدیگر اسپان نشوند
         let y = Math.random() * -180 - (Math.floor(i / 2) * 65) - 40;
         enemies.push(new Enemy(x, y));
     }
@@ -659,6 +657,11 @@ function startCountdown() {
 function triggerLevelReward() {
     isWaveTransition = true;
     btnPause.style.display = 'none';
+    
+    // درخواست شما: پاکسازی کامل ليزرهای دشمن به محض تمام شدن مرحله جهت جلوگیری از برخورد اتفاقی
+    enemyLasers = [];
+    playerLasers = []; 
+    
     rewardOverlay.style.display = 'block';
     playAudio('levelup');
     
@@ -723,16 +726,27 @@ function loop(currentTime) {
         }
     }
 
+    // ليزرهای سفینه در حالت ترنزیشن هم حرکت کنند اما برخوردی ثبت نکنند
+    for (let i = playerLasers.length - 1; i >= 0; i--) {
+        let p = playerLasers[i];
+        p.update(dt); p.draw();
+        if (p.y < -30) playerLasers.splice(i, 1);
+    }
+
+    // ليزرهای دشمن (اگر وجود داشته باشند) در حالت ترنزیشن بدون ثبت برخورد حرکت کنند
+    for (let i = enemyLasers.length - 1; i >= 0; i--) {
+        let el = enemyLasers[i];
+        el.update(dt); el.draw();
+        if (el.y > canvas.height + 30) enemyLasers.splice(i, 1);
+    }
+
     if (!isWaveTransition) {
         if (player.movingLeft && player.x - player.width/2 > 0) player.x -= player.speed * dt;
         if (player.movingRight && player.x + player.width/2 < canvas.width) player.x += player.speed * dt;
 
+        // فقط در صورت فعال بودن مرحله، برخورد تیرهای بازیکن به دشمن چک می‌شود
         for (let i = playerLasers.length - 1; i >= 0; i--) {
             let p = playerLasers[i];
-            p.update(dt); p.draw();
-
-            if (p.y < -30) { playerLasers.splice(i, 1); continue; }
-
             for (let j = enemies.length - 1; j >= 0; j--) {
                 let e = enemies[j];
                 if (intersects(p.x, p.y, p.width, p.height, e.x, e.y, e.width, e.height)) {
@@ -746,12 +760,9 @@ function loop(currentTime) {
             }
         }
 
+        // بررسی برخورد ليزرهای دشمن به بازیکن (فقط در حین بازی، نه در زمان پیام تبریک)
         for (let i = enemyLasers.length - 1; i >= 0; i--) {
             let el = enemyLasers[i];
-            el.update(dt); el.draw();
-
-            if (el.y > canvas.height + 30) { enemyLasers.splice(i, 1); continue; }
-
             if (intersects(el.x, el.y, el.width, el.height, player.x, player.y, player.width, player.height)) {
                 createExplosion(player.x, player.y, '#2563eb');
                 gameOver();
@@ -771,7 +782,7 @@ function loop(currentTime) {
             }
         }
 
-        if (enemies.length === 0 && playerLasers.length === 0) {
+        if (enemies.length === 0) {
             triggerLevelReward();
         }
     }
@@ -845,4 +856,3 @@ window.addEventListener('resize', resizeCanvas);
 </script>
 </body>
 </html>
-
