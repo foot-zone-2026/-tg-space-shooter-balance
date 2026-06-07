@@ -578,7 +578,8 @@ class Enemy {
 }
 
 function spawnWave() {
-    let count = 3 + (level * 2); 
+    // اصلاح اصلی منحنی سختی: مرحله اول فقط ۲ دشمن دارد و در هر مرحله ۱ یا ۲ دشمن اضافه می‌شود
+    let count = 1 + level; 
     let palette = COLOR_PALETTES[(level - 1) % COLOR_PALETTES.length];
     currentEnemyColor = palette.body;
     currentLaserColor = palette.laser;
@@ -586,7 +587,8 @@ function spawnWave() {
 
     for (let i = 0; i < count; i++) {
         let x = Math.random() * (canvas.width - 80) + 40;
-        let y = Math.random() * -250 - (Math.floor(i / 3) * 75) - 40;
+        // چیدمان ترتیبی عمودی برای مراحل بالاتر تا دشمنان به علت کثرت روی یکدیگر اسپان نشوند
+        let y = Math.random() * -180 - (Math.floor(i / 2) * 65) - 40;
         enemies.push(new Enemy(x, y));
     }
 }
@@ -700,7 +702,6 @@ function intersects(x1, y1, w1, h1, x2, y2, w2, h2) {
 function loop(currentTime) {
     if (!isPlaying || isPaused) return;
 
-    // تکنیک اختصاصی کلمپ کلاک صلب جهت از بین بردن هر نوع پرش تصویری در صفحه نمایش‌های مختلف
     let dt = (currentTime - lastTime) / 1000;
     if (dt > 0.03) dt = 0.03; 
     lastTime = currentTime;
@@ -714,7 +715,6 @@ function loop(currentTime) {
         if(star.y > canvas.height) star.y = 0;
     });
 
-    // بهینه‌سازی زباله‌روبی ذرات به محض مرگ جهت حفظ ثبات مموری موبایل
     for (let i = particles.length - 1; i >= 0; i--) {
         particles[i].update(dt);
         particles[i].draw();
@@ -845,3 +845,4 @@ window.addEventListener('resize', resizeCanvas);
 </script>
 </body>
 </html>
+
