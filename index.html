@@ -289,7 +289,12 @@ function resizeCanvas() {
     }
 }
 
+// ایجاد بستر صوتی قدرتمند با مستر گین نهایی برای ۱۰ برابر کردن قدرت سیگنال خروجی
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const masterGain = audioCtx.createGain();
+masterGain.gain.setValueAtTime(3.0, audioCtx.currentTime); // تقویت‌کننده اصلی سخت‌افزاری صوتی
+masterGain.connect(audioCtx.destination);
+
 let bgmInterval = null;
 let bgmStep = 0;
 
@@ -298,69 +303,101 @@ function playAudio(type) {
     const now = audioCtx.currentTime;
     
     if (type === 'shoot') {
+        // لیزر ۱۰ برابر قوی‌تر با تلفیق موج دندانه‌اره‌ای و مربعی جهت نفوذ صوتی بالا در بلندگو
         const osc = audioCtx.createOscillator();
+        const oscSub = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
+        
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
-        gain.gain.setValueAtTime(0.35, now); // افزایش ولوم شلیک از 0.12 به 0.35
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.08);
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(250, now + 0.1);
+        
+        oscSub.type = 'square';
+        oscSub.frequency.setValueAtTime(600, now);
+        oscSub.frequency.exponentialRampToValueAtTime(180, now + 0.1);
+        
+        gain.gain.setValueAtTime(0.9, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        
+        osc.connect(gain);
+        oscSub.connect(gain);
+        gain.connect(masterGain);
+        
+        osc.start(now); oscSub.start(now);
+        osc.stop(now + 0.1); oscSub.stop(now + 0.1);
     } 
     else if (type === 'explosion') {
+        // بازسازی انفجار با فرکانس‌های Mid-range ترکیبی که برخلاف گذشته، روی بلندگوی کوچک گوشی کاملاً منفجر و کوبنده شنیده میشه
         const osc = audioCtx.createOscillator();
+        const oscMid = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
+        
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.linearRampToValueAtTime(20, now + 0.18);
-        gain.gain.setValueAtTime(0.85, now); // افزایش ولوم انفجار از 0.38 به 0.85
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.18);
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.linearRampToValueAtTime(40, now + 0.25);
+        
+        oscMid.type = 'sawtooth';
+        oscMid.frequency.setValueAtTime(450, now);
+        oscMid.frequency.linearRampToValueAtTime(90, now + 0.25);
+        
+        gain.gain.setValueAtTime(1.2, now); 
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        
+        osc.connect(gain);
+        oscMid.connect(gain);
+        gain.connect(masterGain);
+        
+        osc.start(now); oscMid.start(now);
+        osc.stop(now + 0.25); oscMid.stop(now + 0.25);
     } 
     else if (type === 'beep') {
+        // بوق شمارش معکوس بسیار واضح با فرکانس تند گوش‌نواز و ۱۰ برابر شنیدنی‌تر
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(500, now);
-        gain.gain.setValueAtTime(0.50, now); // افزایش ولوم شمارش معکوس از 0.18 به 0.50
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.12);
+        osc.frequency.setValueAtTime(880, now); // فرکانس دقیق‌تر برای شنوایی بهتر
+        gain.gain.setValueAtTime(1.1, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.connect(gain); gain.connect(masterGain);
+        osc.start(now); osc.stop(now + 0.15);
     }
     else if (type === 'gamestart') {
         const osc = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(580, now);
-        osc.frequency.setValueAtTime(880, now + 0.1);
-        gain.gain.setValueAtTime(0.60, now); // افزایش ولوم شروع بازی از 0.22 به 0.60
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.25);
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.setValueAtTime(1000, now + 0.1);
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(400, now);
+        osc2.frequency.setValueAtTime(800, now + 0.1);
+        gain.gain.setValueAtTime(1.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain); osc2.connect(gain); gain.connect(masterGain);
+        osc.start(now); osc2.start(now);
+        osc.stop(now + 0.3); osc2.stop(now + 0.3);
     }
     else if (type === 'gameover') {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(130, now);
-        osc.frequency.linearRampToValueAtTime(30, now + 0.5);
-        gain.gain.setValueAtTime(0.70, now); // افزایش ولوم گیم‌اور از 0.25 به 0.70
-        gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.5);
+        osc.frequency.setValueAtTime(280, now);
+        osc.frequency.linearRampToValueAtTime(60, now + 0.6);
+        gain.gain.setValueAtTime(1.2, now); 
+        gain.gain.linearRampToValueAtTime(0.001, now + 0.6);
+        osc.connect(gain); gain.connect(masterGain);
+        osc.start(now); osc.stop(now + 0.6);
     }
     else if (type === 'levelup') {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(460, now);
-        osc.frequency.setValueAtTime(920, now + 0.1);
-        gain.gain.setValueAtTime(0.60, now); // افزایش ولوم رفتن به موج جدید از 0.22 به 0.60
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.2);
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.setValueAtTime(1100, now + 0.12);
+        gain.gain.setValueAtTime(1.1, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain); gain.connect(masterGain);
+        osc.start(now); osc.stop(now + 0.25);
     }
 }
 
@@ -369,18 +406,29 @@ function startBGM() {
     bgmInterval = setInterval(() => {
         if (!isPlaying || isWaveTransition || isPaused) return; 
         const now = audioCtx.currentTime;
-        const notes = [110, 130, 110, 150, 110, 130, 165, 120];
+        // نوت‌های بیس فرکانس میانی بالا رونده تا در تراز صدا کاملاً شنیده شوند
+        const notes = [150, 180, 150, 220, 150, 180, 240, 160];
         const freq = notes[bgmStep % notes.length];
         
         const osc = audioCtx.createOscillator();
+        const oscHarmonic = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
+        
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.75, now); // افزایش ولوم ریتم و آهنگ پس‌زمینه (BGM) از 0.35 به 0.75
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.15);
+        oscHarmonic.type = 'sine';
+        oscHarmonic.frequency.setValueAtTime(freq * 2, now); // ایجاد هارمونی شفاف جهت افزایش وضوح بک گراند
+        
+        gain.gain.setValueAtTime(0.95, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        
+        osc.connect(gain);
+        oscHarmonic.connect(gain);
+        gain.connect(masterGain);
+        
+        osc.start(now); oscHarmonic.start(now);
+        osc.stop(now + 0.18); oscHarmonic.stop(now + 0.18);
         bgmStep++;
     }, 250);
 }
