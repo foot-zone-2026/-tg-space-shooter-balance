@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Space Shooter Neon Pro Balance</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -14,7 +14,8 @@
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-        body {
+        /* تثبیت کامل صفحه در همه گوشی‌ها */
+        html, body {
             background-color: #020406;
             font-family: 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
@@ -22,6 +23,10 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
+            width: 100%;
+            position: fixed;
+            touch-action: none;
+            overscroll-behavior: none;
         }
         #gameContainer {
             position: relative;
@@ -68,7 +73,6 @@
             pointer-events: auto;
             transition: background 0.05s;
         }
-        /* تغییر رنگ به خاکستری در داخل خود دکمه هنگام کلیک */
         .btn:active {
             background: rgba(255, 255, 255, 0.25);
         }
@@ -83,7 +87,6 @@
             background: rgba(255, 255, 255, 0.25);
         }
 
-        /* دکمه استاپ بالای صفحه */
         #btnPause {
             position: absolute;
             top: 28px;
@@ -102,7 +105,6 @@
             outline: none;
             transition: background 0.05s;
         }
-        /* افکت خاکستری داخل دکمه استاپ هنگام فشرده شدن */
         #btnPause:active {
             background: rgba(255, 255, 255, 0.25);
         }
@@ -198,17 +200,38 @@
             font-size: 13px;
             font-weight: bold;
             letter-spacing: 1px;
-     html, body {
-    touch-action: none;
-    overscroll-behavior: none;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-}
-   }
+        }
+
+        /* استایل نئونی صفحه قفل */
+        #lockScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .neon-lock-text {
+            color: #ff1e27;
+            font-size: 28px;
+            font-weight: 900;
+            text-align: center;
+            text-shadow: 0 0 5px #ff1e27, 0 0 15px #ff1e27, 0 0 30px #ff1e27, 0 0 50px #ff1e27;
+            line-height: 1.5;
+            padding: 20px;
+        }
     </style>
 </head>
 <body oncontextmenu="return false;" ondragstart="return false;">
+
+<div id="lockScreen">
+    <div class="neon-lock-text">SORRY<br>YOU ARE NOT AUTHORIZED<br>TO ACCESS THIS GAME</div>
+</div>
 
 <div id="gameContainer">
     <canvas id="gameCanvas"></canvas>
@@ -277,7 +300,7 @@ function playAudio(type) {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(650, now);
         osc.frequency.exponentialRampToValueAtTime(120, now + 0.08);
-        gain.gain.setValueAtTime(0.07, now); 
+        gain.gain.setValueAtTime(0.4, now); // افزایش صدا از 0.07 به 0.4
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.08);
@@ -288,7 +311,7 @@ function playAudio(type) {
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(160, now);
         osc.frequency.linearRampToValueAtTime(25, now + 0.15);
-        gain.gain.setValueAtTime(0.04, now); 
+        gain.gain.setValueAtTime(0.3, now); // افزایش صدا از 0.04 به 0.3
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.15);
@@ -298,7 +321,7 @@ function playAudio(type) {
         const gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(520, now);
-        gain.gain.setValueAtTime(0.03, now); 
+        gain.gain.setValueAtTime(0.3, now); // افزایش صدا از 0.03 به 0.3
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.15);
@@ -309,7 +332,7 @@ function playAudio(type) {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(140, now);
         osc.frequency.linearRampToValueAtTime(30, now + 0.5);
-        gain.gain.setValueAtTime(0.04, now); 
+        gain.gain.setValueAtTime(0.4, now); // افزایش صدا از 0.04 به 0.4
         gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.5);
@@ -320,7 +343,7 @@ function playAudio(type) {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(440, now);
         osc.frequency.setValueAtTime(880, now + 0.1);
-        gain.gain.setValueAtTime(0.03, now); 
+        gain.gain.setValueAtTime(0.3, now); // افزایش صدا از 0.03 به 0.3
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.2);
@@ -339,7 +362,7 @@ function startBGM() {
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.018, now); 
+        gain.gain.setValueAtTime(0.15, now); // افزایش صدای آهنگ از 0.018 به 0.15
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         
         osc.connect(gain); gain.connect(audioCtx.destination);
@@ -374,19 +397,17 @@ function getEnemySvgDataUrl(bodyColor, detailColor, evolved = false) {
     }
 }
 
-// ساخت پالت رنگ‌های جفت و هم‌خانواده خالص و پررنگ (Neon / Solid)
 const COLOR_PALETTES = [
-    { body: '#ff003c', laser: '#ff003c', detail: '#ff6b8b' }, // قرمز خالص
-    { body: '#ff6a00', laser: '#ff6a00', detail: '#ffb380' }, // نارنجی خالص
-    { body: '#00cc66', laser: '#00cc66', detail: '#85ffd6' }, // سبز نئون
-    { body: '#3333ff', laser: '#3333ff', detail: '#9999ff' }, // آبی پررنگ
-    { body: '#9d00ff', laser: '#9d00ff', detail: '#df99ff' }, // بنفش خالص
-    { body: '#ff00b7', laser: '#ff00b7', detail: '#ff99e5' }, // صورتی جیغ
-    { body: '#00b7ff', laser: '#00b7ff', detail: '#99e5ff' }, // فیروزه‌ای خالص
-    { body: '#ffcc00', laser: '#ffcc00', detail: '#fffae6' }  // زرد طلایی خالص
+    { body: '#ff003c', laser: '#ff003c', detail: '#ff6b8b' }, 
+    { body: '#ff6a00', laser: '#ff6a00', detail: '#ffb380' }, 
+    { body: '#00cc66', laser: '#00cc66', detail: '#85ffd6' }, 
+    { body: '#3333ff', laser: '#3333ff', detail: '#9999ff' }, 
+    { body: '#9d00ff', laser: '#9d00ff', detail: '#df99ff' }, 
+    { body: '#ff00b7', laser: '#ff00b7', detail: '#ff99e5' }, 
+    { body: '#00b7ff', laser: '#00b7ff', detail: '#99e5ff' }, 
+    { body: '#ffcc00', laser: '#ffcc00', detail: '#fffae6' }  
 ];
 
-// --- وضعیت و ساختار متغیرهای بازی ---
 let score = 0;
 let level = 1;
 let isPlaying = false;
@@ -419,7 +440,6 @@ let playerLasers = [];
 let enemyLasers = [];
 let enemies = [];
 
-// --- سیستم ذرات انفجاری بهینه ---
 class ExplodeParticle {
     constructor(x, y, color) {
         this.x = x;
@@ -461,7 +481,7 @@ class Laser {
         this.y = y;
         this.dy = dy;
         this.color = color;
-        this.width = 3.5; // حفظ دقیق ابعاد قبلی تیرها بدون تغییر سایز
+        this.width = 3.5; 
         this.height = 20;
     }
     update(dt) { this.y += this.dy * dt; }
@@ -495,7 +515,6 @@ class Enemy {
 
         let now = Date.now();
         if (now - this.lastShot > Math.max(550, this.shootInterval)) {
-            // شلیک با رنگ کاملاً پررنگ اختصاصی موج (بدون تغییر اندازه عرض تیر)
             enemyLasers.push(new Laser(this.x, this.y + this.height/2, 320 + level*12, currentLaserColor));
             this.lastShot = now;
         }
@@ -738,27 +757,20 @@ btnShoot.addEventListener('touchstart', (e) => { e.preventDefault(); shootLaser(
 
 startBtn.addEventListener('click', resetGame);
 restartBtn.addEventListener('click', resetGame);
-// --- بخش کنترل دسترسی تلگرام ---
-const ALLOWED_IDS = [123456789]; // آیدی عددی خود را اینجا جایگزین کنید
 
-function checkAccess() {
-    const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
-    if (!userId || !ALLOWED_IDS.includes(userId)) {
-        const welcomeScreen = document.getElementById('welcomeScreen');
-        welcomeScreen.innerHTML = `
-            <div style="color:#ff1e27; font-size:24px; font-weight:bold; text-align:center; padding:20px;">
-                SORRY<br>You are not authorized to play.
-            </div>`;
-        return false;
-    }
-    return true;
-}
-
+// --- بررسی آیدی تلگرام برای اجرای بازی ---
+const ALLOWED_IDS = [2049044424]; // آیدی عددی تلگرام خود را اینجا وارد کنید
 window.Telegram.WebApp.ready();
 window.Telegram.WebApp.expand();
 
-spawnWave();
-</script>
+const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+if (!userId || !ALLOWED_IDS.includes(userId)) {
+    document.getElementById('lockScreen').style.display = 'flex';
+    document.getElementById('gameContainer').style.display = 'none';
+} else {
+    spawnWave();
+}
 
+</script>
 </body>
 </html>
