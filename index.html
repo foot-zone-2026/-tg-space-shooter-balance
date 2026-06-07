@@ -14,7 +14,6 @@
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-        /* تثبیت کامل صفحه در همه گوشی‌ها */
         html, body {
             background-color: #020406;
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -48,7 +47,7 @@
             align-items: center;
             width: 100%;
             position: absolute;
-            bottom: 110px;
+            bottom: 45px; /* دکمه ها به پایین ترین بخش منتقل شدند */
             padding: 0 25px;
             pointer-events: none;
             z-index: 5;
@@ -109,6 +108,7 @@
             background: rgba(255, 255, 255, 0.25);
         }
 
+        /* هم‌ترازی دقیق و ۱۰۰٪ وسط صفحات منو */
         .screen-overlay {
             position: absolute;
             top: 0;
@@ -119,6 +119,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            text-align: center;
             z-index: 10;
         }
         
@@ -202,7 +203,6 @@
             letter-spacing: 1px;
         }
 
-        /* استایل نئونی صفحه قفل */
         #lockScreen {
             position: absolute;
             top: 0;
@@ -285,7 +285,7 @@ function resizeCanvas() {
 }
 resizeCanvas();
 
-// --- سیستم صوتی با ولوم تقویت‌شده ---
+// --- سیستم صوتی با تراز متعادل صوتی (Audio Balancing) ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let bgmInterval = null;
 let bgmStep = 0;
@@ -298,9 +298,9 @@ function playAudio(type) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(650, now);
-        osc.frequency.exponentialRampToValueAtTime(120, now + 0.08);
-        gain.gain.setValueAtTime(0.4, now); // افزایش صدا از 0.07 به 0.4
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
+        gain.gain.setValueAtTime(0.12, now); // هم‌تراز شده
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.08);
@@ -309,30 +309,42 @@ function playAudio(type) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(160, now);
-        osc.frequency.linearRampToValueAtTime(25, now + 0.15);
-        gain.gain.setValueAtTime(0.3, now); // افزایش صدا از 0.04 به 0.3
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(20, now + 0.18);
+        gain.gain.setValueAtTime(0.38, now); // تقویت شده برای تعادل با بقیه صداها
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.15);
+        osc.start(now); osc.stop(now + 0.18);
     } 
     else if (type === 'beep') {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(520, now);
-        gain.gain.setValueAtTime(0.3, now); // افزایش صدا از 0.03 به 0.3
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.frequency.setValueAtTime(500, now);
+        gain.gain.setValueAtTime(0.18, now); // هم‌تراز شده
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.15);
+        osc.start(now); osc.stop(now + 0.12);
+    }
+    else if (type === 'gamestart') {
+        // صدای جدید افکت شروع ماموریت بازی پس از اتمام شماره ۳
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(580, now);
+        osc.frequency.setValueAtTime(880, now + 0.1);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.25);
     }
     else if (type === 'gameover') {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.setValueAtTime(130, now);
         osc.frequency.linearRampToValueAtTime(30, now + 0.5);
-        gain.gain.setValueAtTime(0.4, now); // افزایش صدا از 0.04 به 0.4
+        gain.gain.setValueAtTime(0.25, now); // هم‌تراز شده
         gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.5);
@@ -341,9 +353,9 @@ function playAudio(type) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.setValueAtTime(880, now + 0.1);
-        gain.gain.setValueAtTime(0.3, now); // افزایش صدا از 0.03 به 0.3
+        osc.frequency.setValueAtTime(460, now);
+        osc.frequency.setValueAtTime(920, now + 0.1);
+        gain.gain.setValueAtTime(0.22, now); // هم‌تراز شده
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
         osc.connect(gain); gain.connect(audioCtx.destination);
         osc.start(now); osc.stop(now + 0.2);
@@ -362,7 +374,7 @@ function startBGM() {
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.15, now); // افزایش صدای آهنگ از 0.018 به 0.15
+        gain.gain.setValueAtTime(0.06, now); // ولوم ایده آل موزیک پس زمینه بدون نویز
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         
         osc.connect(gain); gain.connect(audioCtx.destination);
@@ -378,7 +390,6 @@ function stopBGM() {
     }
 }
 
-// --- کش تصاویر وکتور SVG ---
 const cache = {
     playerNormal: new Image(),
     playerEvolved: new Image()
@@ -589,6 +600,7 @@ function startCountdown() {
             isPlaying = true;
             isPaused = false;
             isWaveTransition = false;
+            playAudio('gamestart'); // پخش افکت صوتی شروع بازی پس از اتمام شماره معکوس
             startBGM();
             lastTime = performance.now();
             requestAnimationFrame(loop);
@@ -759,7 +771,7 @@ startBtn.addEventListener('click', resetGame);
 restartBtn.addEventListener('click', resetGame);
 
 // --- بررسی آیدی تلگرام برای اجرای بازی ---
-const ALLOWED_IDS = [2049044424]; // آیدی عددی تلگرام خود را اینجا وارد کنید
+const ALLOWED_IDS = [123456789]; // آیدی عددی تلگرام خود را اینجا وارد کنید
 window.Telegram.WebApp.ready();
 window.Telegram.WebApp.expand();
 
