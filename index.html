@@ -2,41 +2,217 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Space Shooter Neon Pro Balance</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #020406; font-family: 'Segoe UI', Roboto, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        #gameContainer { position: relative; width: 100%; max-width: 500px; height: 100vh; background: #020407; overflow: hidden; }
-        canvas { width: 100%; height: 100%; display: block; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #020406;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            background: #020407;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
         
-        #controls { display: flex; justify-content: space-between; align-items: center; width: 100%; position: absolute; bottom: 110px; padding: 0 25px; pointer-events: none; z-index: 5; }
-        .move-group { display: flex; gap: 15px; }
-        .btn { width: 75px; height: 75px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; color: white; font-size: 26px; background: rgba(255, 255, 255, 0.12); cursor: pointer; outline: none; display: flex; align-items: center; justify-content: center; pointer-events: auto; transition: background 0.05s; }
-        .btn:active { background: rgba(255, 255, 255, 0.25); }
-        #btnShoot { width: 85px; height: 85px; background: rgba(235, 94, 40, 0.25); border-color: rgba(235, 94, 40, 0.6); font-size: 32px; }
-        
-        #btnPause { position: absolute; top: 28px; left: 50%; transform: translateX(-50%); padding: 6px 16px; font-size: 12px; font-weight: bold; color: #fff; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 15px; cursor: pointer; z-index: 8; pointer-events: auto; }
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: absolute;
+            bottom: 110px;
+            padding: 0 25px;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .move-group {
+            display: flex;
+            gap: 15px;
+        }
+        .btn {
+            width: 75px;
+            height: 75px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            font-size: 26px;
+            background: rgba(255, 255, 255, 0.12);
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: background 0.05s;
+        }
+        /* تغییر رنگ به خاکستری در داخل خود دکمه هنگام کلیک */
+        .btn:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        #btnShoot {
+            width: 85px;
+            height: 85px;
+            background: rgba(235, 94, 40, 0.25);
+            border-color: rgba(235, 94, 40, 0.6);
+            font-size: 32px;
+        }
+        #btnShoot:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
 
-        .screen-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; background: #000; }
-        .menu-btn { padding: 14px 45px; font-size: 18px; font-weight: bold; color: #ffffff; background: #111; border: 2px solid #ff1e27; border-radius: 30px; cursor: pointer; }
+        /* دکمه استاپ بالای صفحه */
+        #btnPause {
+            position: absolute;
+            top: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
+            cursor: pointer;
+            z-index: 8;
+            letter-spacing: 1px;
+            outline: none;
+            transition: background 0.05s;
+        }
+        /* افکت خاکستری داخل دکمه استاپ هنگام فشرده شدن */
+        #btnPause:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
         
-        /* استایل اختصاصی برای عدم دسترسی */
-        #authErrorScreen { background: #000; z-index: 100; text-align: center; padding: 20px; display: none; }
-        .error-message { color: #ff1e27; font-size: 24px; font-weight: bold; margin-bottom: 15px; }
-        .error-sub { color: #888; font-size: 16px; }
+        #welcomeScreen { background: #000000; }
+        .welcome-title {
+            color: #ff1e27;
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        #gameOverScreen { background: #000000; display: none; }
+        .game-over-title {
+            color: #ff2222;
+            font-size: 46px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            margin-bottom: 40px;
+        }
+        
+        .menu-btn {
+            padding: 14px 45px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            background: #111;
+            border: 2px solid #ff1e27;
+            border-radius: 30px;
+            cursor: pointer;
+            outline: none;
+        }
+        .menu-btn:active { background: rgba(255, 255, 255, 0.25); }
+
+        #countdownOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 9;
+        }
+        
+        #countdownText {
+            font-size: 270px;
+            font-weight: 900;
+            color: #f1cc84;
+            opacity: 0;
+            transform: scale(1.2);
+            transition: transform 0.8s ease-out, opacity 0.8s ease-out;
+            text-shadow: 0 0 15px rgba(241, 204, 132, 0.5), 0 0 30px rgba(255, 159, 28, 0.3);
+        }
+        #countdownText.animate {
+            transform: scale(1.0);
+            opacity: 1;
+        }
+
+        #rewardOverlay {
+            position: absolute;
+            top: 75px;
+            left: 5%;
+            width: 90%;
+            background: rgba(15, 12, 41, 0.95);
+            border: 2px solid #fbbf24;
+            border-radius: 20px;
+            padding: 12px;
+            text-align: center;
+            z-index: 12;
+            display: none;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+        .reward-text {
+            color: #fbbf24;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1px;
+     html, body {
+    touch-action: none;
+    overscroll-behavior: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+   }
     </style>
 </head>
 <body oncontextmenu="return false;" ondragstart="return false;">
 
 <div id="gameContainer">
-    <div id="authErrorScreen" class="screen-overlay">
-        <div class="error-message">متأسفم</div>
-        <div class="error-sub">شما اجازه ورود به بازی را ندارید.</div>
-    </div>
-
     <canvas id="gameCanvas"></canvas>
+    
     <button id="btnPause" style="display: none;">STOP</button>
 
     <div id="controls">
@@ -47,50 +223,542 @@
         <button id="btnShoot" class="btn">🔥</button>
     </div>
 
-    <div id="welcomeScreen" class="screen-overlay" style="display: none;">
-        <div class="welcome-title" style="color: #ff1e27; font-size: 34px; font-weight: 900; margin-bottom: 40px;">WELCOME</div>
+    <div id="welcomeScreen" class="screen-overlay">
+        <div class="welcome-title">WELCOME TO THE GAME</div>
         <button id="startBtn" class="menu-btn">START MISSION</button>
     </div>
 
-    <div id="gameOverScreen" class="screen-overlay" style="display: none;">
-        <div class="game-over-title" style="color: #ff2222; font-size: 46px; font-weight: 900; margin-bottom: 40px;">GAME OVER</div>
+    <div id="gameOverScreen" class="screen-overlay">
+        <div class="game-over-title">GAME OVER</div>
         <button id="restartBtn" class="menu-btn">START OVER</button>
     </div>
 
-    <div id="countdownOverlay"><div id="countdownText">3</div></div>
-    <div id="rewardOverlay"><span class="reward-text">STAGE CLEAR!</span></div>
+    <div id="countdownOverlay">
+        <div id="countdownText">3</div>
+    </div>
+
+    <div id="rewardOverlay">
+        <span class="reward-text">STAGE CLEAR! WAVE REWARD UNLOCKED! 🔥</span>
+    </div>
 </div>
 
 <script>
-// (سایر کدهای منطق بازی دقیقاً همان‌هایی هستند که فرستادید)
-// فقط این بخش احراز هویت را جایگزین کنید:
+document.addEventListener("contextmenu", e => e.preventDefault());
 
-const ALLOWED_TELEGRAM_IDS = [2049044424]; 
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const welcomeScreen = document.getElementById('welcomeScreen');
+const gameOverScreen = document.getElementById('gameOverScreen');
+const countdownOverlay = document.getElementById('countdownOverlay');
+const countdownText = document.getElementById('countdownText');
+const rewardOverlay = document.getElementById('rewardOverlay');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const btnPause = document.getElementById('btnPause');
 
-function checkAuthentication() {
-    let userTelegramId = null;
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        userTelegramId = tg.initDataUnsafe.user.id;
+function resizeCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+}
+resizeCanvas();
+
+// --- سیستم صوتی با ولوم تقویت‌شده ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let bgmInterval = null;
+let bgmStep = 0;
+
+function playAudio(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const now = audioCtx.currentTime;
+    
+    if (type === 'shoot') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(650, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.08);
+        gain.gain.setValueAtTime(0.07, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.08);
+    } 
+    else if (type === 'explosion') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.linearRampToValueAtTime(25, now + 0.15);
+        gain.gain.setValueAtTime(0.04, now); 
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.15);
+    } 
+    else if (type === 'beep') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(520, now);
+        gain.gain.setValueAtTime(0.03, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.15);
+    }
+    else if (type === 'gameover') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.linearRampToValueAtTime(30, now + 0.5);
+        gain.gain.setValueAtTime(0.04, now); 
+        gain.gain.linearRampToValueAtTime(0.001, now + 0.5);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.5);
+    }
+    else if (type === 'levelup') {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.setValueAtTime(880, now + 0.1);
+        gain.gain.setValueAtTime(0.03, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.2);
+    }
+}
+
+function startBGM() {
+    stopBGM();
+    bgmInterval = setInterval(() => {
+        if (!isPlaying || isWaveTransition || isPaused) return; 
+        const now = audioCtx.currentTime;
+        const notes = [110, 130, 110, 150, 110, 130, 165, 120];
+        const freq = notes[bgmStep % notes.length];
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.018, now); 
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + 0.15);
+        bgmStep++;
+    }, 250);
+}
+
+function stopBGM() {
+    if (bgmInterval) {
+        clearInterval(bgmInterval);
+        bgmInterval = null;
+    }
+}
+
+// --- کش تصاویر وکتور SVG ---
+const cache = {
+    playerNormal: new Image(),
+    playerEvolved: new Image()
+};
+
+cache.playerNormal.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50,5 L72,40 L85,55 L85,78 L72,72 L50,88 L28,72 L15,78 L15,55 L28,40 Z' fill='%231d4ed8' stroke='%23172554' stroke-width='2'/><path d='M50,15 L68,42 L74,70 L50,80 L26,70 L32,42 Z' fill='%2317a2b8'/><path d='M50,22 L58,45 L50,68 L42,45 Z' fill='%232563eb'/><circle cx='50' cy='40' r='8' fill='%2338bdf8'/><path d='M38,72 L28,82 L20,82 L28,72 Z M62,72 L72,82 L80,82 L72,72 Z' fill='%23f97316'/><circle cx='30' cy='52' r='3' fill='%23f97316'/><circle cx='70' cy='52' r='3' fill='%23f97316'/></svg>";
+cache.playerEvolved.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50,2 L70,30 L95,45 L85,85 L70,75 L50,98 L30,75 L15,85 L5,45 L30,30 Z' fill='%23d97706' stroke='%2378350f' stroke-width='3'/><path d='M50,15 L75,45 L70,80 L50,90 L30,80 L25,45 Z' fill='%23f59e0b'/><circle cx='50' cy='45' r='12' fill='%23fef08a'/><path d='M25,80 L10,95 L5,90 L20,75 Z M75,80 L90,95 L95,90 L80,75 Z' fill='%23ef4444'/></svg>";
+
+function getEnemySvgDataUrl(bodyColor, detailColor, evolved = false) {
+    const cleanBody = bodyColor.replace('#', '%23');
+    const cleanDetail = detailColor.replace('#', '%23');
+    if (!evolved) {
+        return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50,95 L15,55 L15,22 L35,32 L50,5 L65,32 L85,22 L85,55 Z' fill='" + cleanBody + "' stroke='%231a1a1a' stroke-width='2'/><path d='M50,80 L24,52 L28,32 L50,18 L72,32 L76,52 Z' fill='" + cleanDetail + "'/><path d='M50,68 L36,45 L50,30 L64,45 Z' fill='rgba(0,0,0,0.15)'/><circle cx='50' cy='45' r='7' fill='" + cleanDetail + "'/></svg>";
+    } else {
+        return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M10,10 L30,40 L50,5 L70,40 L90,10 L80,70 L50,95 L20,70 Z' fill='" + cleanBody + "' stroke='%231a1a1a' stroke-width='3'/><path d='M50,25 L75,50 L50,80 L25,50 Z' fill='" + cleanDetail + "'/><circle cx='50' cy='50' r='10' fill='rgba(255,255,255,0.3)'/><line x1='30' y1='40' x2='70' y2='40' stroke='" + cleanDetail + "' stroke-width='4'/></svg>";
+    }
+}
+
+// ساخت پالت رنگ‌های جفت و هم‌خانواده خالص و پررنگ (Neon / Solid)
+const COLOR_PALETTES = [
+    { body: '#ff003c', laser: '#ff003c', detail: '#ff6b8b' }, // قرمز خالص
+    { body: '#ff6a00', laser: '#ff6a00', detail: '#ffb380' }, // نارنجی خالص
+    { body: '#00cc66', laser: '#00cc66', detail: '#85ffd6' }, // سبز نئون
+    { body: '#3333ff', laser: '#3333ff', detail: '#9999ff' }, // آبی پررنگ
+    { body: '#9d00ff', laser: '#9d00ff', detail: '#df99ff' }, // بنفش خالص
+    { body: '#ff00b7', laser: '#ff00b7', detail: '#ff99e5' }, // صورتی جیغ
+    { body: '#00b7ff', laser: '#00b7ff', detail: '#99e5ff' }, // فیروزه‌ای خالص
+    { body: '#ffcc00', laser: '#ffcc00', detail: '#fffae6' }  // زرد طلایی خالص
+];
+
+// --- وضعیت و ساختار متغیرهای بازی ---
+let score = 0;
+let level = 1;
+let isPlaying = false;
+let isPaused = false;
+let isWaveTransition = false; 
+let stars = [];
+let particles = [];
+let lastTime = 0;
+let currentEnemyColor = COLOR_PALETTES[0].body;
+let currentLaserColor = COLOR_PALETTES[0].laser;
+let currentDetailColor = COLOR_PALETTES[0].detail;
+
+for(let i=0; i<45; i++) {
+    stars.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*1.3 + 0.4, speed: Math.random()*40 + 15 });
+}
+
+const player = {
+    x: canvas.width / 2,
+    y: canvas.height - 230, 
+    width: 62,
+    height: 62,
+    speed: 460, 
+    movingLeft: false,
+    movingRight: false,
+    lastShot: 0,
+    cooldown: 180
+};
+
+let playerLasers = [];
+let enemyLasers = [];
+let enemies = [];
+
+// --- سیستم ذرات انفجاری بهینه ---
+class ExplodeParticle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = Math.random() * 2.5 + 1;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 180 + 70;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.alpha = 1;
+        this.decay = Math.random() * 1.4 + 1.1;
+    }
+    update(dt) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        this.alpha -= this.decay * dt;
+    }
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+function createExplosion(x, y, color) {
+    for (let i = 0; i < 14; i++) {
+        particles.push(new ExplodeParticle(x, y, color));
+    }
+}
+
+class Laser {
+    constructor(x, y, dy, color) {
+        this.x = x;
+        this.y = y;
+        this.dy = dy;
+        this.color = color;
+        this.width = 3.5; // حفظ دقیق ابعاد قبلی تیرها بدون تغییر سایز
+        this.height = 20;
+    }
+    update(dt) { this.y += this.dy * dt; }
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x - this.width/2, this.y, this.width, this.height);
+    }
+}
+
+class Enemy {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = 52;
+        this.height = 52;
+        this.speedX = (Math.random() - 0.5) * (110 + level * 20);
+        this.speedY = 35 + (level * 10);
+        this.lastShot = 0;
+        this.shootInterval = Math.random() * 1500 + 1300 - (level * 50);
+        
+        this.img = new Image();
+        this.img.src = getEnemySvgDataUrl(currentEnemyColor, currentDetailColor, score >= 1000);
+    }
+    update(dt) {
+        this.x += this.speedX * dt;
+        this.y += this.speedY * dt;
+
+        if (this.x - this.width/2 <= 0 || this.x + this.width/2 >= canvas.width) {
+            this.speedX *= -1;
+        }
+
+        let now = Date.now();
+        if (now - this.lastShot > Math.max(550, this.shootInterval)) {
+            // شلیک با رنگ کاملاً پررنگ اختصاصی موج (بدون تغییر اندازه عرض تیر)
+            enemyLasers.push(new Laser(this.x, this.y + this.height/2, 320 + level*12, currentLaserColor));
+            this.lastShot = now;
+        }
+    }
+    draw() {
+        ctx.drawImage(this.img, this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+    }
+}
+
+function spawnWave() {
+    let count = 3 + (level * 2); 
+    let palette = COLOR_PALETTES[(level - 1) % COLOR_PALETTES.length];
+    currentEnemyColor = palette.body;
+    currentLaserColor = palette.laser;
+    currentDetailColor = palette.detail;
+
+    for (let i = 0; i < count; i++) {
+        let x = Math.random() * (canvas.width - 80) + 40;
+        let y = Math.random() * -250 - (Math.floor(i / 3) * 75) - 40;
+        enemies.push(new Enemy(x, y));
+    }
+}
+
+function shootLaser() {
+    if (!isPlaying || isWaveTransition || isPaused) return;
+    let now = Date.now();
+    if (now - player.lastShot > player.cooldown) {
+        let laserColor = score >= 1000 ? '#fbbf24' : '#38bdf8';
+        playerLasers.push(new Laser(player.x, player.y - player.height/2, -580, laserColor));
+        playAudio('shoot');
+        player.lastShot = now;
+    }
+}
+
+btnPause.addEventListener('click', () => {
+    if (!isPlaying || isWaveTransition) return;
+    isPaused = !isPaused;
+    if (isPaused) {
+        btnPause.innerText = "RESUME";
+        stopBGM();
+    } else {
+        btnPause.innerText = "STOP";
+        startBGM();
+        lastTime = performance.now();
+        requestAnimationFrame(loop);
+    }
+});
+
+function startCountdown() {
+    welcomeScreen.style.display = 'none';
+    gameOverScreen.style.display = 'none';
+    rewardOverlay.style.display = 'none';
+    btnPause.style.display = 'none';
+    countdownOverlay.style.display = 'flex';
+    
+    let states = ['3', '2', '1'];
+    let current = 0;
+
+    function nextTick() {
+        if (current < states.length) {
+            countdownText.innerText = states[current];
+            countdownText.classList.remove('animate');
+            void countdownText.offsetWidth; 
+            countdownText.classList.add('animate');
+            playAudio('beep'); 
+            current++;
+            setTimeout(nextTick, 1000);
+        } else {
+            countdownOverlay.style.display = 'none';
+            btnPause.style.display = 'block';
+            btnPause.innerText = "STOP";
+            isPlaying = true;
+            isPaused = false;
+            isWaveTransition = false;
+            startBGM();
+            lastTime = performance.now();
+            requestAnimationFrame(loop);
+        }
+    }
+    nextTick();
+}
+
+function triggerLevelReward() {
+    isWaveTransition = true;
+    btnPause.style.display = 'none';
+    rewardOverlay.style.display = 'block';
+    playAudio('levelup');
+    
+    setTimeout(() => {
+        rewardOverlay.style.display = 'none';
+        level++;
+        spawnWave();
+        isWaveTransition = false;
+        btnPause.style.display = 'block';
+    }, 2200); 
+}
+
+function gameOver() {
+    isPlaying = false;
+    btnPause.style.display = 'none';
+    stopBGM();
+    playAudio('gameover');
+    gameOverScreen.style.display = 'flex';
+}
+
+function resetGame() {
+    score = 0;
+    level = 1;
+    player.x = canvas.width / 2;
+    playerLasers = [];
+    enemyLasers = [];
+    enemies = [];
+    particles = [];
+    isWaveTransition = false;
+    isPaused = false;
+    spawnWave();
+    startCountdown();
+}
+
+function intersects(x1, y1, w1, h1, x2, y2, w2, h2) {
+    return x1 - w1/2 < x2 + w2/2 && x1 + w1/2 > x2 - w2/2 && y1 - h1/2 < y2 + h2/2 && y1 + h1/2 > y2 - h2/2;
+}
+
+function loop(currentTime) {
+    if (!isPlaying || isPaused) return;
+
+    let dt = (currentTime - lastTime) / 1000;
+    if (dt > 0.1) dt = 0.1; 
+    lastTime = currentTime;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#ffffff';
+    stars.forEach(star => {
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+        star.y += star.speed * dt;
+        if(star.y > canvas.height) star.y = 0;
+    });
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update(dt);
+        particles[i].draw();
+        if (particles[i].alpha <= 0) particles.splice(i, 1);
     }
 
-    if (userTelegramId !== null && ALLOWED_TELEGRAM_IDS.includes(Number(userTelegramId))) {
-        document.getElementById('welcomeScreen').style.display = 'flex';
-        return true;
-    } else {
-        document.getElementById('authErrorScreen').style.display = 'flex';
-        document.getElementById('gameContainer').style.pointerEvents = 'none'; // غیرفعال کردن کل تعاملات
+    if (!isWaveTransition) {
+        if (player.movingLeft && player.x - player.width/2 > 0) player.x -= player.speed * dt;
+        if (player.movingRight && player.x + player.width/2 < canvas.width) player.x += player.speed * dt;
+
+        for (let i = playerLasers.length - 1; i >= 0; i--) {
+            let p = playerLasers[i];
+            p.update(dt); p.draw();
+
+            if (p.y < -30) { playerLasers.splice(i, 1); continue; }
+
+            for (let j = enemies.length - 1; j >= 0; j--) {
+                let e = enemies[j];
+                if (intersects(p.x, p.y, p.width, p.height, e.x, e.y, e.width, e.height)) {
+                    createExplosion(e.x, e.y, currentEnemyColor);
+                    playAudio('explosion');
+                    score += 20; 
+                    enemies.splice(j, 1);
+                    playerLasers.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
+        for (let i = enemyLasers.length - 1; i >= 0; i--) {
+            let el = enemyLasers[i];
+            el.update(dt); el.draw();
+
+            if (el.y > canvas.height + 30) { enemyLasers.splice(i, 1); continue; }
+
+            if (intersects(el.x, el.y, el.width, el.height, player.x, player.y, player.width, player.height)) {
+                createExplosion(player.x, player.y, '#2563eb');
+                gameOver();
+                return;
+            }
+        }
+
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            let e = enemies[i];
+            e.update(dt); e.draw();
+
+            if (intersects(player.x, player.y, player.width, player.height, e.x, e.y, e.width, e.height) || 
+                (e.y - e.height/2 > player.y + player.height/2)) {
+                createExplosion(player.x, player.y, '#2563eb');
+                gameOver();
+                return;
+            }
+        }
+
+        if (enemies.length === 0 && playerLasers.length === 0) {
+            triggerLevelReward();
+        }
+    }
+
+    ctx.save();
+    let flameHeight = 15 + Math.sin(Date.now()*0.05)*4;
+    let flameColor = score >= 1000 ? 'rgba(251, 191, 36, 0.8)' : 'rgba(0, 195, 255, 0.8)';
+    ctx.fillStyle = flameColor;
+    ctx.beginPath();
+    ctx.moveTo(player.x - 6, player.y + player.height/2);
+    ctx.lineTo(player.x + 6, player.y + player.height/2);
+    ctx.lineTo(player.x, player.y + player.height/2 + flameHeight);
+    ctx.closePath();
+    ctx.fill();
+    
+    let currentShipImg = score >= 1000 ? cache.playerEvolved : cache.playerNormal;
+    ctx.drawImage(currentShipImg, player.x - player.width/2, player.y - player.height/2, player.width, player.height);
+    ctx.restore();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`SCORE: ${score}`, 25, 45);
+    ctx.textAlign = 'right';
+    ctx.fillText(`WAVE: ${level}`, canvas.width - 25, 45);
+
+    requestAnimationFrame(loop);
+}
+
+const btnLeft = document.getElementById('btnLeft');
+const btnRight = document.getElementById('btnRight');
+const btnShoot = document.getElementById('btnShoot');
+
+btnLeft.addEventListener('mousedown', () => player.movingLeft = true);
+btnLeft.addEventListener('mouseup', () => player.movingLeft = false);
+btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingLeft = true; });
+btnLeft.addEventListener('touchend', () => player.movingLeft = false);
+
+btnRight.addEventListener('mousedown', () => player.movingRight = true);
+btnRight.addEventListener('mouseup', () => player.movingRight = false);
+btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingRight = true; });
+btnRight.addEventListener('touchend', () => player.movingRight = false);
+
+btnShoot.addEventListener('mousedown', shootLaser);
+btnShoot.addEventListener('touchstart', (e) => { e.preventDefault(); shootLaser(); });
+
+startBtn.addEventListener('click', resetGame);
+restartBtn.addEventListener('click', resetGame);
+// --- بخش کنترل دسترسی تلگرام ---
+const ALLOWED_IDS = [123456789]; // آیدی عددی خود را اینجا جایگزین کنید
+
+function checkAccess() {
+    const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+    if (!userId || !ALLOWED_IDS.includes(userId)) {
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        welcomeScreen.innerHTML = `
+            <div style="color:#ff1e27; font-size:24px; font-weight:bold; text-align:center; padding:20px;">
+                SORRY<br>You are not authorized to play.
+            </div>`;
         return false;
     }
+    return true;
 }
 
-// ... بقیه کدهای بازی شما از اینجا به بعد قرار می‌گیرد ...
-// (حتماً در انتهای فایل تابع checkAuthentication را صدا بزنید)
-if (checkAuthentication()) {
-    spawnWave();
-}
+window.Telegram.WebApp.ready();
+window.Telegram.WebApp.expand();
+
+spawnWave();
 </script>
+
 </body>
 </html>
