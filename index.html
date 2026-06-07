@@ -34,7 +34,7 @@
             height: 100vh;
             background: #020407;
             overflow: hidden;
-            display: none; /* تا زمان تایید آیدی کاملا مخفی می ماند */
+            display: none; 
         }
         canvas {
             width: 100%;
@@ -48,7 +48,7 @@
             align-items: center;
             width: 100%;
             position: absolute;
-            bottom: 20px; /* دکمه ها باز هم پایین تر آورده شدند */
+            bottom: 20px; 
             padding: 0 25px;
             pointer-events: none;
             z-index: 5;
@@ -109,7 +109,6 @@
             background: rgba(255, 255, 255, 0.25);
         }
 
-        /* وسط چین سازی مطلق هندسی برای صفحات منو */
         .screen-overlay {
             position: absolute;
             top: 0;
@@ -286,7 +285,6 @@ function resizeCanvas() {
     canvas.height = canvas.parentElement.clientHeight;
 }
 
-// --- سیستم صوتی با موسیقی متن تقویت شده و بالانس شده ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let bgmInterval = null;
 let bgmStep = 0;
@@ -374,7 +372,7 @@ function startBGM() {
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.35, now); // صدای اصلی بازی (BGM) به شدت تقویت و هم‌تراز با صدای سوخت شد
+        gain.gain.setValueAtTime(0.35, now); 
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         
         osc.connect(gain); gain.connect(audioCtx.destination);
@@ -602,6 +600,7 @@ function startCountdown() {
             isWaveTransition = false;
             playAudio('gamestart'); 
             startBGM();
+            // رفع باگ گیم‌اور ناگهانی: زمان پایه را دقیقاً در همین فریم صفر می‌کنیم تا پرش سرعت رخ ندهد
             lastTime = performance.now();
             requestAnimationFrame(loop);
         }
@@ -621,6 +620,7 @@ function triggerLevelReward() {
         spawnWave();
         isWaveTransition = false;
         btnPause.style.display = 'block';
+        lastTime = performance.now(); // ریست زمان بعد از اتمام نمایش جایزه موج
     }, 2200); 
 }
 
@@ -770,20 +770,17 @@ btnShoot.addEventListener('touchstart', (e) => { e.preventDefault(); shootLaser(
 startBtn.addEventListener('click', resetGame);
 restartBtn.addEventListener('click', resetGame);
 
-// --- ارتقا و حساس‌سازی منطق سیستم احراز هویت آیدی تلگرام ---
-const ALLOWED_IDS = [2049044424]; // آیدی عددی خود را جایگزین کنید
+const ALLOWED_IDS = [123456789]; // آیدی عددی خود را جایگزین کنید
 
 window.Telegram.WebApp.ready();
 window.Telegram.WebApp.expand();
 
 const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
 
-// بررسی فوق‌العاده حساس: اگر آیدی وجود نداشته باشد یا در آرایه مجاز نباشد، بلافاصله قفل کامل اعمال می‌شود
 if (!userId || !ALLOWED_IDS.includes(Number(userId))) {
     document.getElementById('lockScreen').style.display = 'flex';
     document.getElementById('gameContainer').style.display = 'none';
 } else {
-    // فقط و فقط در صورت تایید آیدی، ظرف بازی نمایش داده شده و امواج لود می‌شوند
     document.getElementById('lockScreen').style.display = 'none';
     document.getElementById('gameContainer').style.display = 'block';
     resizeCanvas();
