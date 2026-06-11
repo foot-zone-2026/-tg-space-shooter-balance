@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Space Shooter Neon Pro Balance</title>
+    <title>Quantum Track - AI Prompt Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -14,27 +14,22 @@
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-        html, body {
-            background-color: #020406;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+        body {
+            background-color: #020408;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            width: 100%;
-            position: fixed;
-            touch-action: none;
-            overscroll-behavior: none;
         }
         #gameContainer {
             position: relative;
             width: 100%;
             max-width: 500px;
             height: 100vh;
-            background: #020407;
+            background: #05070c;
             overflow: hidden;
-            display: none; 
         }
         canvas {
             width: 100%;
@@ -42,71 +37,114 @@
             display: block;
         }
         
-        #controls {
+        #topBar {
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 100%;
+            padding: 0 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 6;
+            pointer-events: none;
+        }
+        #scoreBoard {
+            color: #ffffff;
+            font-size: 11px; 
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: rgba(4, 6, 12, 0.95);
+            border: 1px solid #00d2ff;
+            border-radius: 10px;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            gap: 14px; 
+            padding: 8px 14px; 
+            flex-grow: 1;
+            filter: drop-shadow(0 0 5px rgba(0, 210, 255, 0.6));
+        }
+        .sb-item {
+            white-space: nowrap;
+        }
+        
+        /* دکمه‌های کنترل بالای صفحه */
+        .top-action-btn {
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #ffffff;
+            background: rgba(4, 6, 12, 0.95);
+            border-radius: 10px;
+            cursor: pointer;
+            pointer-events: auto;
+            white-space: nowrap;
+            margin-left: 8px;
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        #pauseBtn {
+            border: 1px solid #00d2ff;
+            display: none;
+        }
+        
+        /* استایل دکمه هوش مصنوعی - در ابتدا خاکستری و غیرفعال */
+        #aiBtn {
+            border: 1px solid #475569;
+            background: rgba(30, 41, 59, 0.8);
+            color: #94a3b8;
+            cursor: not-allowed;
+            opacity: 0.5;
+            display: none;
+        }
+        /* استایل دکمه هوش مصنوعی وقتی امتیاز به ۱۰۰ می‌رسد و فعال می‌شود */
+        #aiBtn.active {
+            border: 1px solid #10b981;
+            background: rgba(4, 120, 87, 0.9);
+            color: #ffffff;
+            cursor: pointer;
+            opacity: 1;
+            filter: drop-shadow(0 0 10px #10b981);
+            animation: pulseGlow 1.5s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% { filter: drop-shadow(0 0 5px #10b981); }
+            100% { filter: drop-shadow(0 0 15px #10b981); }
+        }
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 85px;
+            align-items: center;
             width: 100%;
             position: absolute;
-            bottom: 20px; 
+            bottom: 45px; 
             padding: 0 25px;
             pointer-events: none;
             z-index: 5;
         }
-        .move-group {
-            display: flex;
-            gap: 15px;
-        }
         .btn {
-            width: 75px;
-            height: 75px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            width: 82px;
+            height: 82px;
+            border: 2px solid rgba(0, 210, 255, 0.3);
             border-radius: 50%;
-            color: white;
-            font-size: 26px;
-            background: rgba(255, 255, 255, 0.12);
+            color: #00d2ff;
+            font-size: 30px;
+            background: rgba(0, 210, 255, 0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             cursor: pointer;
             outline: none;
             display: flex;
             align-items: center;
             justify-content: center;
             pointer-events: auto;
-            transition: background 0.05s;
-        }
-        .btn:active {
-            background: rgba(255, 255, 255, 0.25);
-        }
-        #btnShoot {
-            width: 85px;
-            height: 85px;
-            background: rgba(235, 94, 40, 0.25);
-            border-color: rgba(235, 94, 40, 0.6);
-            font-size: 32px;
-        }
-        #btnShoot:active {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        #btnPause {
-            position: absolute;
-            top: 28px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 6px 16px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #fff;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 15px;
-            cursor: pointer;
-            z-index: 8;
-            letter-spacing: 1px;
-            outline: none;
-            transition: background 0.05s;
-        }
-        #btnPause:active {
-            background: rgba(255, 255, 255, 0.25);
+            touch-action: none;
+            will-change: transform;
+            box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.1);
         }
 
         .screen-overlay {
@@ -119,42 +157,42 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 20px;
             z-index: 10;
         }
         
-        #welcomeScreen { background: #000000; }
+        #welcomeScreen { background: #030509; display: none; }
         .welcome-title {
-            color: #ff1e27;
-            font-size: 34px;
+            color: #00d2ff;
+            font-size: 36px;
             font-weight: 900;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             margin-bottom: 40px;
+            filter: drop-shadow(0 0 12px rgba(0, 210, 255, 0.8));
             text-align: center;
         }
         
-        #gameOverScreen { background: #000000; display: none; }
+        #gameOverScreen { background: rgba(3, 5, 9, 0.96); display: none; }
         .game-over-title {
             color: #ff2222;
-            font-size: 46px;
+            font-size: 42px;
             font-weight: 900;
-            letter-spacing: 4px;
             margin-bottom: 40px;
+            text-shadow: 0 0 25px rgba(255, 34, 34, 0.5);
         }
         
         .menu-btn {
-            padding: 14px 45px;
-            font-size: 18px;
+            padding: 15px 50px;
+            font-size: 15px;
             font-weight: bold;
             color: #ffffff;
-            background: #111;
-            border: 2px solid #ff1e27;
+            background: #0b0e14;
+            border: 2px solid #00d2ff;
             border-radius: 30px;
             cursor: pointer;
-            outline: none;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
         }
-        .menu-btn:active { background: rgba(255, 255, 255, 0.25); }
+        #restartBtn { border-color: #ff2222; box-shadow: 0 0 10px rgba(255,34,34,0.3); }
 
         #countdownOverlay {
             position: absolute;
@@ -165,694 +203,368 @@
             display: none;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(2, 4, 8, 0.94);
             z-index: 9;
         }
-        
         #countdownText {
-            font-size: 270px;
+            font-size: 250px; 
             font-weight: 900;
-            color: #f1cc84;
-            opacity: 0;
-            transform: scale(1.2);
-            transition: transform 0.8s ease-out, opacity 0.8s ease-out;
-            text-shadow: 0 0 15px rgba(241, 204, 132, 0.5), 0 0 30px rgba(255, 159, 28, 0.3);
-        }
-        #countdownText.animate {
-            transform: scale(1.0);
-            opacity: 1;
+            color: #ffdf00; 
+            filter: drop-shadow(0 0 15px #d4af37) drop-shadow(0 0 40px #aa7c11);
+            will-change: transform, opacity;
         }
 
-        #rewardOverlay {
+        #rewardToast {
             position: absolute;
-            top: 75px;
-            left: 5%;
-            width: 90%;
-            background: rgba(15, 12, 41, 0.95);
-            border: 2px solid #fbbf24;
-            border-radius: 20px;
-            padding: 12px;
-            text-align: center;
-            z-index: 12;
-            display: none;
-            box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
-        }
-        .reward-text {
-            color: #fbbf24;
+            top: 95px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.85);
+            background: #00d2ff;
+            color: #000000;
+            padding: 14px 24px;
             font-size: 13px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        #lockScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        .neon-lock-text {
-            color: #ff1e27;
-            font-size: 28px;
             font-weight: 900;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 210, 255, 0.5);
+            z-index: 8;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
-            text-shadow: 0 0 5px #ff1e27, 0 0 15px #ff1e27, 0 0 30px #ff1e27, 0 0 50px #ff1e27;
-            line-height: 1.5;
-            padding: 20px;
+            width: 90%;
+            direction: rtl; /* راست‌چین برای پیام‌های فارسی ربات */
+        }
+        #rewardToast.show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
         }
     </style>
 </head>
-<body oncontextmenu="return false;" ondragstart="return false;">
-
-<div id="lockScreen">
-    <div class="neon-lock-text">SORRY<br>YOU ARE NOT AUTHORIZED<br>TO ACCESS THIS GAME</div>
-</div>
+<body>
 
 <div id="gameContainer">
     <canvas id="gameCanvas"></canvas>
     
-    <button id="btnPause" style="display: none;">STOP</button>
-
-    <div id="controls">
-        <div class="move-group">
-            <button id="btnLeft" class="btn">◀</button>
-            <button id="btnRight" class="btn">▶</button>
+    <div id="topBar">
+        <div id="scoreBoard">
+            <span class="sb-item" id="sbPass">PASS: 0/10</span>
+            <span class="sb-item" id="sbScore">SCORE: 0</span>
+            <span class="sb-item" id="sbStage">SECTOR: 1</span>
         </div>
-        <button id="btnShoot" class="btn">🔥</button>
+        <!-- اضافه شدن دکمه AI کنار دکمه Pause -->
+        <button id="aiBtn" class="top-action-btn">AI 🔒</button>
+        <button id="pauseBtn" class="top-action-btn">Pause</button>
+    </div>
+
+    <div id="rewardToast">شما توکن لازم برای درخواست پرامپت را جمع کرده‌اید! برای ورود به بات روی AI کلیک کنید. 🔥</div>
+    
+    <div id="controls">
+        <button id="btnLeft" class="btn">◀</button>
+        <button id="btnRight" class="btn">▶</button>
     </div>
 
     <div id="welcomeScreen" class="screen-overlay">
-        <div class="welcome-title">WELCOME TO THE GAME</div>
-        <button id="startBtn" class="menu-btn">START MISSION</button>
+        <div class="welcome-title">QUANTUM TRACK</div>
+        <button id="startBtn" class="menu-btn">Launch Ship</button>
     </div>
 
     <div id="gameOverScreen" class="screen-overlay">
-        <div class="game-over-title">GAME OVER</div>
-        <button id="restartBtn" class="menu-btn">START OVER</button>
+        <div class="game-over-title">CRITICAL CRASH</div>
+        <button id="restartBtn" class="menu-btn">Respawn Ship</button>
     </div>
 
     <div id="countdownOverlay">
         <div id="countdownText">3</div>
     </div>
-
-    <div id="rewardOverlay">
-        <span class="reward-text">STAGE CLEAR! WAVE REWARD UNLOCKED! 🔥</span>
-    </div>
 </div>
 
 <script>
-document.addEventListener("contextmenu", e => e.preventDefault());
-
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = true;
+
 const welcomeScreen = document.getElementById('welcomeScreen');
 const gameOverScreen = document.getElementById('gameOverScreen');
 const countdownOverlay = document.getElementById('countdownOverlay');
 const countdownText = document.getElementById('countdownText');
-const rewardOverlay = document.getElementById('rewardOverlay');
 const startBtn = document.getElementById('startBtn');
 const restartBtn = document.getElementById('restartBtn');
-const btnPause = document.getElementById('btnPause');
+const pauseBtn = document.getElementById('pauseBtn');
+const aiBtn = document.getElementById('aiBtn');
+
+const sbPass = document.getElementById('sbPass');
+const sbScore = document.getElementById('sbScore');
+const sbStage = document.getElementById('sbStage');
+const rewardToast = document.getElementById('rewardToast');
+
+let score = 0;
+let currentStageIndex = 0; 
+let passedCarsCount = 0; 
+let isPlaying = false;
+let isPaused = false; 
+let isBurning = false; 
+let lastTime = 0;
+let roadLinesY = 0;
+let enemySpawnTimer = 0;
+let enemies = [];
+let particles = [];
+let sceneryItems = [];
+let lastSpawnLane = -1; 
+let animationFrameId = null; 
+let isAiUnlocked = false; // وضعیت قفل هوش مصنوعی
+
+let baseRoadSpeed = 560; 
+let playerSpeed = 590;
+let realGameStageLevel = 0; 
+
+const player = {
+    x: 250, y: 520, 
+    width: 58, height: 84, 
+    movingLeft: false, movingRight: false
+};
+
+// نمایش اولیه صفحه اول
+welcomeScreen.style.display = 'flex';
 
 function resizeCanvas() {
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = canvas.parentElement.clientHeight;
-    if (player) {
-        player.x = canvas.width / 2;
-        player.y = canvas.height - 230;
-    }
 }
+resizeCanvas();
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const masterGain = audioCtx.createGain();
-masterGain.gain.setValueAtTime(2.8, audioCtx.currentTime); 
-masterGain.connect(audioCtx.destination);
-
-let bgmInterval = null;
-let bgmStep = 0;
-
-function playAudio(type) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const now = audioCtx.currentTime;
-    
-    if (type === 'shoot') {
-        const osc = audioCtx.createOscillator();
-        const oscMod = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(950, now);
-        osc.frequency.exponentialRampToValueAtTime(300, now + 0.12);
-        
-        oscMod.type = 'triangle';
-        oscMod.frequency.setValueAtTime(450, now);
-        oscMod.frequency.exponentialRampToValueAtTime(150, now + 0.12);
-        
-        gain.gain.setValueAtTime(0.85, now); 
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-        
-        osc.connect(gain);
-        oscMod.connect(gain);
-        gain.connect(masterGain);
-        
-        osc.start(now); oscMod.start(now);
-        osc.stop(now + 0.12); oscMod.stop(now + 0.12);
-    } 
-    else if (type === 'explosion') {
-        const osc = audioCtx.createOscillator();
-        const oscHigh = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(280, now);
-        osc.frequency.linearRampToValueAtTime(30, now + 0.28);
-        
-        oscHigh.type = 'sawtooth';
-        oscHigh.frequency.setValueAtTime(600, now);
-        oscHigh.frequency.linearRampToValueAtTime(80, now + 0.28);
-        
-        gain.gain.setValueAtTime(1.3, now); 
-        gain.gain.exponentialRampToValueAtTime(0.005, now + 0.28);
-        
-        osc.connect(gain);
-        oscHigh.connect(gain);
-        gain.connect(masterGain);
-        
-        osc.start(now); oscHigh.start(now);
-        osc.stop(now + 0.28); oscHigh.stop(now + 0.28);
-    } 
-    else if (type === 'beep') {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(920, now); 
-        gain.gain.setValueAtTime(1.1, now); 
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
-        osc.connect(gain); gain.connect(masterGain);
-        osc.start(now); osc.stop(now + 0.14);
-    }
-    else if (type === 'gamestart') {
-        const osc = audioCtx.createOscillator();
-        const osc2 = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(650, now);
-        osc.frequency.setValueAtTime(1100, now + 0.12);
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(450, now);
-        osc2.frequency.setValueAtTime(900, now + 0.12);
-        gain.gain.setValueAtTime(1.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
-        osc.connect(gain); osc2.connect(gain); gain.connect(masterGain);
-        osc.start(now); osc2.start(now);
-        osc.stop(now + 0.32); osc2.stop(now + 0.32);
-    }
-    else if (type === 'gameover') {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(320, now);
-        osc.frequency.linearRampToValueAtTime(50, now + 0.65);
-        gain.gain.setValueAtTime(1.2, now); 
-        gain.gain.linearRampToValueAtTime(0.001, now + 0.65);
-        osc.connect(gain); gain.connect(masterGain);
-        osc.start(now); osc.stop(now + 0.65);
-    }
-    else if (type === 'levelup') {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(580, now);
-        osc.frequency.setValueAtTime(1200, now + 0.14);
-        gain.gain.setValueAtTime(1.1, now); 
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-        osc.connect(gain); gain.connect(masterGain);
-        osc.start(now); osc.stop(now + 0.28);
-    }
-}
-
-function startBGM() {
-    stopBGM();
-    bgmInterval = setInterval(() => {
-        if (!isPlaying || isWaveTransition || isPaused) return; 
-        const now = audioCtx.currentTime;
-        
-        const notes = [160, 200, 160, 240, 180, 200, 260, 180];
-        const freq = notes[bgmStep % notes.length];
-        
-        const osc = audioCtx.createOscillator();
-        const oscHarmonic = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now);
-        
-        oscHarmonic.type = 'sine';
-        oscHarmonic.frequency.setValueAtTime(freq * 2, now); 
-        
-        gain.gain.setValueAtTime(0.85, now); 
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-        
-        osc.connect(gain);
-        oscHarmonic.connect(gain);
-        gain.connect(masterGain);
-        
-        osc.start(now); oscHarmonic.start(now);
-        osc.stop(now + 0.18); oscHarmonic.stop(now + 0.18);
-        bgmStep++;
-    }, 240); 
-}
-
-function stopBGM() {
-    if (bgmInterval) {
-        clearInterval(bgmInterval);
-        bgmInterval = null;
-    }
-}
-
-const cache = {
-    playerNormal: new Image(),
-    playerEvolved: new Image()
-};
-
-cache.playerNormal.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50,5 L72,40 L85,55 L85,78 L72,72 L50,88 L28,72 L15,78 L15,55 L28,40 Z' fill='%231d4ed8' stroke='%23172554' stroke-width='2'/><path d='M50,15 L68,42 L74,70 L50,80 L26,70 L32,42 Z' fill='%2317a2b8'/><path d='M50,22 L58,45 L50,68 L42,45 Z' fill='%232563eb'/><circle cx='50' cy='40' r='8' fill='%2338bdf8'/><path d='M38,72 L28,82 L20,82 L28,72 Z M62,72 L72,82 L80,82 L72,72 Z' fill='%23f97316'/><circle cx='30' cy='52' r='3' fill='%23f97316'/><circle cx='70' cy='52' r='3' fill='%23f97316'/></svg>";
-cache.playerEvolved.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50,2 L70,30 L95,45 L85,85 L70,75 L50,98 L30,75 L15,85 L5,45 L30,30 Z' fill='%23d97706' stroke='%2378350f' stroke-width='3'/><path d='M50,15 L75,45 L70,80 L50,90 L30,80 L25,45 Z' fill='%23f59e0b'/><circle cx='50' cy='45' r='12' fill='%23fef08a'/><path d='M25,80 L10,95 L5,90 L20,75 Z M75,80 L90,95 L95,90 L80,75 Z' fill='%23ef4444'/></svg>";
-
-function getEnemySvgDataUrl(bodyColor, detailColor, evolved = false) {
-    const cleanBody = bodyColor.replace('#', '%23');
-    const cleanDetail = detailColor.replace('#', '%23');
-    if (!evolved) {
-        return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50,95 L15,55 L15,22 L35,32 L50,5 L65,32 L85,22 L85,55 Z' fill='" + cleanBody + "' stroke='%231a1a1a' stroke-width='2'/><path d='M50,80 L24,52 L28,32 L50,18 L72,32 L76,52 Z' fill='" + cleanDetail + "'/><path d='M50,68 L36,45 L50,30 L64,45 Z' fill='rgba(0,0,0,0.15)'/><circle cx='50' cy='45' r='7' fill='" + cleanDetail + "'/></svg>";
-    } else {
-        return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M10,10 L30,40 L50,5 L70,40 L90,10 L80,70 L50,95 L20,70 Z' fill='" + cleanBody + "' stroke='%231a1a1a' stroke-width='3'/><path d='M50,25 L75,50 L50,80 L25,50 Z' fill='" + cleanDetail + "'/><circle cx='50' cy='50' r='10' fill='rgba(255,255,255,0.3)'/><line x1='30' y1='40' x2='70' y2='40' stroke='" + cleanDetail + "' stroke-width='4'/></svg>";
-    }
-}
-
-const COLOR_PALETTES = [
-    { body: '#ff003c', laser: '#ff003c', detail: '#ff6b8b' }, 
-    { body: '#ff6a00', laser: '#ff6a00', detail: '#ffb380' }, 
-    { body: '#00cc66', laser: '#00cc66', detail: '#85ffd6' }, 
-    { body: '#3333ff', stroke: '#3333ff', detail: '#9999ff' }, 
-    { body: '#9d00ff', laser: '#9d00ff', detail: '#df99ff' }, 
-    { body: '#ff00b7', laser: '#ff00b7', detail: '#ff99e5' }, 
-    { body: '#00b7ff', laser: '#00b7ff', detail: '#99e5ff' }, 
-    { body: '#ffcc00', laser: '#ffcc00', detail: '#fffae6' }  
+const spaceSectors = [
+    { key: 'astro', name: 'ASTRO', color: '#facc15', type: 'STANDARD' },
+    { key: 'meteor', name: 'METEOR', color: '#334155', type: 'SPEED_OBSTACLE' }, 
+    { key: 'comet', name: 'COMET', color: '#c084fc', type: 'NEW_COLOR' },     
+    { key: 'orbit', name: 'ORBIT', color: '#0284c7', type: 'BIG_SIZE' },       
+    { key: 'nova', name: 'NOVA', color: '#dc2626', type: 'CHAOS' }             
 ];
 
-let score = 0;
-let level = 1;
-let isPlaying = false;
-let isPaused = false;
-let isWaveTransition = false; 
-let stars = [];
-let particles = [];
-let lastTime = 0;
-let currentEnemyColor = COLOR_PALETTES[0].body;
-let currentLaserColor = COLOR_PALETTES[0].laser;
-let currentDetailColor = COLOR_PALETTES[0].detail;
+const vehicleCacheCanvases = {};
 
-const player = {
-    x: 0,
-    y: 0, 
-    width: 62,
-    height: 62,
-    speed: 460, 
-    movingLeft: false,
-    movingRight: false,
-    lastShot: 0,
-    cooldown: 180
-};
-
-let playerLasers = [];
-let enemyLasers = [];
-let enemies = [];
-
-class ExplodeParticle {
-    constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.radius = Math.random() * 2.5 + 1;
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 180 + 70;
-        this.vx = Math.cos(angle) * speed;
-        this.vy = Math.sin(angle) * speed;
-        this.alpha = 1;
-        this.decay = Math.random() * 1.4 + 1.1;
-    }
-    update(dt) {
-        this.x += this.vx * dt;
-        this.y += this.vy * dt;
-        this.alpha -= this.decay * dt;
-    }
-    draw() {
-        ctx.save();
-        ctx.globalAlpha = this.alpha;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-    }
-}
-
-function createExplosion(x, y, color) {
-    for (let i = 0; i < 14; i++) {
-        particles.push(new ExplodeParticle(x, y, color));
-    }
-}
-
-class Laser {
-    constructor(x, y, dy, color) {
-        this.x = x;
-        this.y = y;
-        this.dy = dy;
-        this.color = color;
-        this.width = 3.5; 
-        this.height = 20;
-    }
-    update(dt) { this.y += this.dy * dt; }
-    draw() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x - this.width/2, this.y, this.width, this.height);
-    }
-}
-
-class Enemy {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.width = 52;
-        this.height = 52;
-        this.speedX = (Math.random() - 0.5) * (110 + level * 20);
-        this.speedY = 35 + (level * 10);
-        this.lastShot = 0;
-        this.shootInterval = Math.random() * 1500 + 1300 - (level * 50);
-        
-        this.img = new Image();
-        this.img.src = getEnemySvgDataUrl(currentEnemyColor, currentDetailColor, score >= 1000);
-    }
-    update(dt) {
-        this.x += this.speedX * dt;
-        this.y += this.speedY * dt;
-
-        if (this.x - this.width/2 <= 0 || this.x + this.width/2 >= canvas.width) {
-            this.speedX *= -1;
-        }
-
-        let now = Date.now();
-        if (now - this.lastShot > Math.max(550, this.shootInterval)) {
-            enemyLasers.push(new Laser(this.x, this.y + this.height/2, 320 + level*12, currentLaserColor));
-            this.lastShot = now;
-        }
-    }
-    draw() {
-        ctx.drawImage(this.img, this.x - this.width/2, this.y - this.height/2, this.width, this.height);
-    }
-}
-
-function spawnWave() {
-    let count = 1 + level; 
-    let palette = COLOR_PALETTES[(level - 1) % COLOR_PALETTES.length];
-    currentEnemyColor = palette.body;
-    currentLaserColor = palette.laser;
-    currentDetailColor = palette.detail;
-
-    for (let i = 0; i < count; i++) {
-        let x = Math.random() * (canvas.width - 80) + 40;
-        let y = Math.random() * -180 - (Math.floor(i / 2) * 65) - 40;
-        enemies.push(new Enemy(x, y));
-    }
-}
-
-function shootLaser() {
-    if (!isPlaying || isWaveTransition || isPaused) return;
-    let now = Date.now();
-    if (now - player.lastShot > player.cooldown) {
-        let laserColor = score >= 1000 ? '#fbbf24' : '#38bdf8';
-        playerLasers.push(new Laser(player.x, player.y - player.height/2, -580, laserColor));
-        playAudio('shoot');
-        player.lastShot = now;
-    }
-}
-
-btnPause.addEventListener('click', () => {
-    if (!isPlaying || isWaveTransition) return;
-    isPaused = !isPaused;
-    if (isPaused) {
-        btnPause.innerText = "RESUME";
-        stopBGM();
+function generateVehicleGraphicsCache(key, color, name, isPlayer = false) {
+    const w = 90, h = 130;
+    const cacheCanvas = document.createElement('canvas');
+    cacheCanvas.width = w; cacheCanvas.height = h;
+    const c = cacheCanvas.getContext('2d');
+    c.fillStyle = isPlayer ? 'rgba(0, 229, 255, 0.35)' : 'rgba(255, 68, 0, 0.25)';
+    c.beginPath(); c.arc(45, 110, 22, 0, Math.PI * 2); c.fill();
+    c.fillStyle = color;
+    c.beginPath();
+    if (isPlayer) {
+        c.moveTo(45, 12); c.lineTo(76, 82); c.lineTo(62, 102); c.lineTo(45, 90); c.lineTo(28, 102); c.lineTo(14, 82);
     } else {
-        btnPause.innerText = "STOP";
-        startBGM();
-        lastTime = performance.now();
-        requestAnimationFrame(loop);
+        c.moveTo(45, 106); c.lineTo(76, 36); c.lineTo(60, 16); c.lineTo(45, 26); c.lineTo(30, 16); c.lineTo(14, 36);
     }
-});
+    c.closePath(); c.fill();
+    c.lineWidth = 1.8; c.strokeStyle = '#05070a'; c.stroke();
+    c.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    c.beginPath();
+    if (isPlayer) { c.ellipse(45, 52, 12, 22, 0, 0, Math.PI * 2); } else { c.ellipse(45, 62, 14, 16, 0, 0, Math.PI * 2); }
+    c.fill();
+    c.fillStyle = isPlayer ? '#ffffff' : '#ff3333';
+    c.fillRect(18, 70, 4, 14); c.fillRect(68, 70, 4, 14);
+    c.fillStyle = '#ffffff'; c.font = '900 9px monospace'; c.textAlign = 'center';
+    c.fillText(name, 45, isPlayer ? 84 : 48);
+    vehicleCacheCanvases[key] = cacheCanvas;
+}
+
+function buildAllGraphicsCaches() {
+    generateVehicleGraphicsCache('player', '#00e5ff', 'ALPHA', true);
+    spaceSectors.forEach((sector, idx) => {
+        generateVehicleGraphicsCache(sector.key + '_' + idx, sector.color, sector.name, false);
+    });
+}
+buildAllGraphicsCaches();
+
+function updateScoreUI() {
+    sbPass.innerText = `PASS: ${passedCarsCount}/10`;
+    sbScore.innerText = `SCORE: ${score}`;
+    sbStage.innerText = `SECTOR: ${realGameStageLevel + 1}`;
+}
+
+function checkStageProgression() {
+    passedCarsCount++;
+    
+    // منطق بررسی رسیدن به امتیاز ۱۰۰ برای باز شدن هوش مصنوعی
+    if (score >= 100 && !isAiUnlocked) {
+        isAiUnlocked = true;
+        aiBtn.classList.add('active');
+        aiBtn.innerText = "AI 🔓";
+        showToastNotification("شما توکن لازم برای درخواست پرامپت را جمع کرده‌اید! برای ورود به بات روی AI کلیک کنید. 🔥");
+    }
+
+    if (passedCarsCount >= 10) {
+        passedCarsCount = 0;
+        currentStageIndex = (currentStageIndex < spaceSectors.length - 1) ? currentStageIndex + 1 : 0;
+        realGameStageLevel++;
+        baseRoadSpeed = 560 + (realGameStageLevel * 140);
+        playerSpeed = 590 + (realGameStageLevel * 75);
+    }
+    updateScoreUI();
+}
+
+function showToastNotification(text) {
+    rewardToast.innerText = text;
+    rewardToast.classList.add('show');
+    setTimeout(() => { rewardToast.classList.remove('show'); }, 4000);
+}
+
+function initScenery() {
+    sceneryItems = [];
+    const plasmaColors = ['#ff007f', '#00f5ff', '#ffdf00'];
+    for (let y = -100; y < canvas.height + 100; y += 190) {
+        sceneryItems.push({ x: canvas.width * 0.04, y: y, color: plasmaColors[Math.floor(Math.random() * 3)] });
+        sceneryItems.push({ x: canvas.width * 0.96, y: y + 95, color: plasmaColors[Math.floor(Math.random() * 3)] });
+    }
+}
+
+function updateAndDrawScenery(speed, dt) {
+    ctx.fillStyle = '#060a12';
+    ctx.fillRect(0, 0, canvas.width * 0.08, canvas.height);
+    ctx.fillRect(canvas.width * 0.92, 0, canvas.width * 0.08, canvas.height);
+    for(let i=0; i<sceneryItems.length; i++) {
+        const item = sceneryItems[i];
+        if (isPlaying && !isPaused && !isBurning) item.y += speed * dt;
+        if (item.y > canvas.height + 25) item.y = -25;
+        ctx.fillStyle = item.color;
+        ctx.beginPath(); ctx.arc(item.x - 4, item.y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(item.x + 4, item.y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(item.x, item.y, 3, 0, Math.PI * 2); ctx.fill();
+    }
+}
+
+class EnemyCar {
+    constructor() {
+        this.jobSpec = spaceSectors[currentStageIndex];
+        this.width = (this.jobSpec.type === 'BIG_SIZE') ? 66 : 58;
+        this.height = (this.jobSpec.type === 'BIG_SIZE') ? 104 : 84;
+        const lanes = [canvas.width * 0.23, canvas.width * 0.5, canvas.width * 0.77];
+        let targetLaneIndex = Math.floor(Math.random() * lanes.length);
+        if (targetLaneIndex === lastSpawnLane) { targetLaneIndex = (targetLaneIndex + 1) % lanes.length; }
+        lastSpawnLane = targetLaneIndex;
+        this.x = lanes[targetLaneIndex]; this.y = -130;
+        this.speed = baseRoadSpeed - 55 + (Math.random() * 60); 
+        this.passed = false;
+        this.cacheKey = this.jobSpec.key + '_' + currentStageIndex;
+    }
+    update(dt) { this.y += this.speed * dt; }
+    draw() {
+        const imgCache = vehicleCacheCanvases[this.cacheKey];
+        if (imgCache) { ctx.drawImage(imgCache, this.x - this.width/2, this.y - this.height/2, this.width, this.height); }
+    }
+}
+
+function handleEnemies(dt) {
+    if (!isPaused && !isBurning) enemySpawnTimer += dt;
+    let currentType = spaceSectors[currentStageIndex].type;
+    let baseInterval = (currentType === 'SPEED_OBSTACLE' || currentType === 'CHAOS') ? 0.42 : 0.80 - (realGameStageLevel * 0.09);
+    if (enemySpawnTimer > Math.max(0.28, baseInterval) && !isPaused && !isBurning) {
+        enemies.push(new EnemyCar()); enemySpawnTimer = 0;
+    }
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        if (!isPaused && !isBurning) enemies[i].update(dt);
+        enemies[i].draw();
+        if (!enemies[i].passed && enemies[i].y > player.y + player.height / 2) {
+            enemies[i].passed = true; score += 25; checkStageProgression();
+        }
+        if (enemies[i].y > canvas.height + 130) { enemies.splice(i, 1); continue; }
+        if (!isBurning && intersects(player.x, player.y, player.width, player.height, enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height)) {
+            isBurning = true; gameOver(); return;
+        }
+    }
+}
+
+function intersects(x1, y1, w1, h1, x2, y2, w2, h2) {
+    return x1 - w1/2.02 < x2 + w2/2.02 && x1 + w1/2.02 > x2 - w2/2.02 && y1 - h1/2.02 < y2 + h2/2.02 && y1 + h1/2.02 > y2 - h2/2.02;
+}
+
+function drawRoad(dt) {
+    ctx.fillStyle = '#0a0d14'; ctx.fillRect(canvas.width * 0.08, 0, canvas.width * 0.84, canvas.height);
+    const leftLimit = canvas.width * 0.08; const rightLimit = canvas.width * 0.92 - 6;
+    updateAndDrawScenery(baseRoadSpeed, dt);
+    ctx.fillStyle = '#b026ff'; ctx.fillRect(leftLimit, 0, 6, canvas.height); ctx.fillRect(rightLimit, 0, 6, canvas.height);
+    if (isPlaying && !isPaused && !isBurning) {
+        if (player.x - player.width / 1.95 <= leftLimit + 6 || player.x + player.width / 1.95 >= rightLimit) { isBurning = true; gameOver(); return; }
+    }
+    ctx.fillStyle = 'rgba(0, 210, 255, 0.45)';
+    if (!isPaused && !isBurning) roadLinesY = (roadLinesY + baseRoadSpeed * dt) % 70;
+    const lineX1 = canvas.width * 0.38 - 1.5; const lineX2 = canvas.width * 0.62 - 1.5;
+    for (let y = roadLinesY - 70; y < canvas.height; y += 70) { ctx.fillRect(lineX1, y, 3, 35); ctx.fillRect(lineX2, y, 3, 35); }
+}
 
 function startCountdown() {
-    welcomeScreen.style.display = 'none';
-    gameOverScreen.style.display = 'none';
-    rewardOverlay.style.display = 'none';
-    btnPause.style.display = 'none';
+    welcomeScreen.style.display = 'none'; gameOverScreen.style.display = 'none'; pauseBtn.style.display = 'none'; aiBtn.style.display = 'none';
     countdownOverlay.style.display = 'flex';
-    
-    let states = ['3', '2', '1'];
-    let current = 0;
-
+    let states = ['3', '2', '1']; let current = 0;
     function nextTick() {
-        if (current < states.length) {
-            countdownText.innerText = states[current];
-            countdownText.classList.remove('animate');
-            void countdownText.offsetWidth; 
-            countdownText.classList.add('animate');
-            playAudio('beep'); 
-            current++;
-            setTimeout(nextTick, 1000);
-        } else {
-            countdownOverlay.style.display = 'none';
-            btnPause.style.display = 'block';
-            btnPause.innerText = "STOP";
-            isPlaying = true;
-            isPaused = false;
-            isWaveTransition = false;
-            
-            spawnWave(); 
-            
-            playAudio('gamestart'); 
-            startBGM();
-            lastTime = performance.now();
-            requestAnimationFrame(loop);
+        if (current < states.length) { countdownText.innerText = states[current]; current++; setTimeout(nextTick, 700); } else {
+            countdownOverlay.style.display = 'none'; isPlaying = true; isPaused = false; isBurning = false;
+            pauseBtn.innerText = "Pause"; pauseBtn.style.display = 'block'; aiBtn.style.display = 'block';
+            lastTime = performance.now(); if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(loop);
         }
     }
     nextTick();
 }
 
-function triggerLevelReward() {
-    isWaveTransition = true;
-    btnPause.style.display = 'none';
-    
-    // درخواست شما: پاکسازی کامل ليزرهای دشمن به محض تمام شدن مرحله جهت جلوگیری از برخورد اتفاقی
-    enemyLasers = [];
-    playerLasers = []; 
-    
-    rewardOverlay.style.display = 'block';
-    playAudio('levelup');
-    
-    setTimeout(() => {
-        rewardOverlay.style.display = 'none';
-        level++;
-        spawnWave();
-        isWaveTransition = false;
-        btnPause.style.display = 'block';
-        lastTime = performance.now(); 
-    }, 2200); 
-}
+pauseBtn.addEventListener('click', () => {
+    if (isBurning) return; isPaused = !isPaused; pauseBtn.innerText = isPaused ? "Resume" : "Pause";
+    if (!isPaused) { lastTime = performance.now(); animationFrameId = requestAnimationFrame(loop); }
+});
 
-function gameOver() {
-    isPlaying = false;
-    btnPause.style.display = 'none';
-    stopBGM();
-    playAudio('gameover');
-    gameOverScreen.style.display = 'flex';
-}
+// عملکرد دکمه هوش مصنوعی برای خروج اتوماتیک و ورود به چت ربات تلگرام
+aiBtn.addEventListener('click', () => {
+    if (!isAiUnlocked) return; // اگر قفل باز نباشد کاری نکن
+    
+    // هدایت مستقیم کاربر به چت تلگرام ربات و فعال کردن استارت خودکار
+    // آیدی ربات خودت را جایگزین "your_bot_username" کن
+    const botUsername = "2049044424"; 
+    window.location.href = `https://t.me/${botUsername}?start=ai_access`;
+});
+
+function gameOver() { isPlaying = false; pauseBtn.style.display = 'none'; gameOverScreen.style.display = 'flex'; }
 
 function resetGame() {
-    resizeCanvas();
+    score = 0; currentStageIndex = 0; passedCarsCount = 0; lastSpawnLane = -1; realGameStageLevel = 0;
+    baseRoadSpeed = 560; playerSpeed = 590; isBurning = false;
+    player.movingLeft = false; player.movingRight = false;
     
-    score = 0;
-    level = 1;
-    playerLasers = [];
-    enemyLasers = [];
-    enemies = [];
-    particles = [];
-    isWaveTransition = false;
-    isPaused = false;
+    // ریست کردن وضعیت دکمه هوش مصنوعی در هر بازی جدید
+    isAiUnlocked = false;
+    aiBtn.classList.remove('active');
+    aiBtn.innerText = "AI 🔒";
     
-    startCountdown();
-}
-
-function intersects(x1, y1, w1, h1, x2, y2, w2, h2) {
-    return x1 - w1/2 < x2 + w2/2 && x1 + w1/2 > x2 - w2/2 && y1 - h1/2 < y2 + h2/2 && y1 + h1/2 > y2 - h2/2;
+    updateScoreUI(); resizeCanvas(); player.x = canvas.width / 2; player.y = 520;
+    enemies = []; enemySpawnTimer = -0.1; initScenery(); startCountdown();
 }
 
 function loop(currentTime) {
     if (!isPlaying || isPaused) return;
-
-    let dt = (currentTime - lastTime) / 1000;
-    if (dt > 0.03) dt = 0.03; 
-    lastTime = currentTime;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = '#ffffff';
-    stars.forEach(star => {
-        ctx.fillRect(star.x, star.y, star.size, star.size);
-        star.y += star.speed * dt;
-        if(star.y > canvas.height) star.y = 0;
-    });
-
-    for (let i = particles.length - 1; i >= 0; i--) {
-        particles[i].update(dt);
-        particles[i].draw();
-        if (particles[i].alpha <= 0) {
-            particles.splice(i, 1);
-        }
+    let dt = (currentTime - lastTime) / 1000; if (dt > 0.05) dt = 0.016; lastTime = currentTime;
+    ctx.clearRect(0, 0, canvas.width, canvas.height); drawRoad(dt);
+    if (isPlaying && !isPaused && !isBurning) {
+        if (player.movingLeft) player.x -= playerSpeed * dt;
+        if (player.movingRight) player.x += playerSpeed * dt;
     }
-
-    // ليزرهای سفینه در حالت ترنزیشن هم حرکت کنند اما برخوردی ثبت نکنند
-    for (let i = playerLasers.length - 1; i >= 0; i--) {
-        let p = playerLasers[i];
-        p.update(dt); p.draw();
-        if (p.y < -30) playerLasers.splice(i, 1);
+    if (!isBurning) {
+        const pCache = vehicleCacheCanvases['player'];
+        if (pCache) { ctx.drawImage(pCache, player.x - player.width/2, player.y - player.height/2, player.width, player.height); }
     }
-
-    // ليزرهای دشمن (اگر وجود داشته باشند) در حالت ترنزیشن بدون ثبت برخورد حرکت کنند
-    for (let i = enemyLasers.length - 1; i >= 0; i--) {
-        let el = enemyLasers[i];
-        el.update(dt); el.draw();
-        if (el.y > canvas.height + 30) enemyLasers.splice(i, 1);
-    }
-
-    if (!isWaveTransition) {
-        if (player.movingLeft && player.x - player.width/2 > 0) player.x -= player.speed * dt;
-        if (player.movingRight && player.x + player.width/2 < canvas.width) player.x += player.speed * dt;
-
-        // فقط در صورت فعال بودن مرحله، برخورد تیرهای بازیکن به دشمن چک می‌شود
-        for (let i = playerLasers.length - 1; i >= 0; i--) {
-            let p = playerLasers[i];
-            for (let j = enemies.length - 1; j >= 0; j--) {
-                let e = enemies[j];
-                if (intersects(p.x, p.y, p.width, p.height, e.x, e.y, e.width, e.height)) {
-                    createExplosion(e.x, e.y, currentEnemyColor);
-                    playAudio('explosion');
-                    score += 20; 
-                    enemies.splice(j, 1);
-                    playerLasers.splice(i, 1);
-                    break;
-                }
-            }
-        }
-
-        // بررسی برخورد ليزرهای دشمن به بازیکن (فقط در حین بازی، نه در زمان پیام تبریک)
-        for (let i = enemyLasers.length - 1; i >= 0; i--) {
-            let el = enemyLasers[i];
-            if (intersects(el.x, el.y, el.width, el.height, player.x, player.y, player.width, player.height)) {
-                createExplosion(player.x, player.y, '#2563eb');
-                gameOver();
-                return;
-            }
-        }
-
-        for (let i = enemies.length - 1; i >= 0; i--) {
-            let e = enemies[i];
-            e.update(dt); e.draw();
-
-            if (intersects(player.x, player.y, player.width, player.height, e.x, e.y, e.width, e.height) || 
-                (e.y - e.height/2 > player.y + player.height/2)) {
-                createExplosion(player.x, player.y, '#2563eb');
-                gameOver();
-                return;
-            }
-        }
-
-        if (enemies.length === 0) {
-            triggerLevelReward();
-        }
-    }
-
-    ctx.save();
-    let flameHeight = 15 + Math.sin(Date.now()*0.05)*4;
-    let flameColor = score >= 1000 ? 'rgba(251, 191, 36, 0.8)' : 'rgba(0, 195, 255, 0.8)';
-    ctx.fillStyle = flameColor;
-    ctx.beginPath();
-    ctx.moveTo(player.x - 6, player.y + player.height/2);
-    ctx.lineTo(player.x + 6, player.y + player.height/2);
-    ctx.lineTo(player.x, player.y + player.height/2 + flameHeight);
-    ctx.closePath();
-    ctx.fill();
-    
-    let currentShipImg = score >= 1000 ? cache.playerEvolved : cache.playerNormal;
-    ctx.drawImage(currentShipImg, player.x - player.width/2, player.y - player.height/2, player.width, player.height);
-    ctx.restore();
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-    ctx.font = 'bold 15px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(`SCORE: ${score}`, 25, 45);
-    ctx.textAlign = 'right';
-    ctx.fillText(`WAVE: ${level}`, canvas.width - 25, 45);
-
-    requestAnimationFrame(loop);
+    handleEnemies(dt);
+    if (isPlaying && !isPaused) animationFrameId = requestAnimationFrame(loop);
 }
 
-const btnLeft = document.getElementById('btnLeft');
-const btnRight = document.getElementById('btnRight');
-const btnShoot = document.getElementById('btnShoot');
-
-btnLeft.addEventListener('mousedown', () => player.movingLeft = true);
-btnLeft.addEventListener('mouseup', () => player.movingLeft = false);
-btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingLeft = true; });
+const btnLeft = document.getElementById('btnLeft'); const btnRight = document.getElementById('btnRight');
+btnLeft.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); player.movingLeft = true; }, { passive: false });
 btnLeft.addEventListener('touchend', () => player.movingLeft = false);
-
-btnRight.addEventListener('mousedown', () => player.movingRight = true);
-btnRight.addEventListener('mouseup', () => player.movingRight = false);
-btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingRight = true; });
+btnRight.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); player.movingRight = true; }, { passive: false });
 btnRight.addEventListener('touchend', () => player.movingRight = false);
 
-btnShoot.addEventListener('mousedown', shootLaser);
-btnShoot.addEventListener('touchstart', (e) => { e.preventDefault(); shootLaser(); });
-
-startBtn.addEventListener('click', resetGame);
-restartBtn.addEventListener('click', resetGame);
-
-for(let i=0; i<45; i++) {
-    stars.push({ x: Math.random()*500, y: Math.random()*800, size: Math.random()*1.3 + 0.4, speed: Math.random()*40 + 15 });
-}
-
-const ALLOWED_IDS = [2049044424]; 
-
-window.Telegram.WebApp.ready();
-window.Telegram.WebApp.expand();
-
-const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
-
-if (!userId || !ALLOWED_IDS.includes(Number(userId))) {
-    document.getElementById('lockScreen').style.display = 'flex';
-    document.getElementById('gameContainer').style.display = 'none';
-} else {
-    document.getElementById('lockScreen').style.display = 'none';
-    document.getElementById('gameContainer').style.display = 'block';
-    resizeCanvas();
-}
-
-window.addEventListener('resize', resizeCanvas);
+startBtn.addEventListener('click', resetGame); restartBtn.addEventListener('click', resetGame);
+window.addEventListener('load', () => { resizeCanvas(); player.x = canvas.width / 2; player.y = 520; initScenery(); });
 </script>
 </body>
 </html>
+
