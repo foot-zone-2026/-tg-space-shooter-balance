@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quantum Track - AI Prompt Edition</title>
+    <title>Astro Rogue - AI Prompt Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* استایل‌های اصلی و دست‌نخورده بازی آسترو روگ */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -15,7 +16,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            background-color: #020408;
+            background-color: #030509; /* آسمان تاریک آسترو روگ */
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
             display: flex;
@@ -28,7 +29,7 @@
             width: 100%;
             max-width: 500px;
             height: 100vh;
-            background: #05070c;
+            background: #060912;
             overflow: hidden;
         }
         canvas {
@@ -37,6 +38,7 @@
             display: block;
         }
         
+        /* بخش بالای صفحه - ساختار جایزه و امتیاز دست‌نخورده است */
         #topBar {
             position: absolute;
             top: 15px;
@@ -54,11 +56,9 @@
             font-size: 11px; 
             font-weight: 800;
             letter-spacing: 0.5px;
-            background: rgba(4, 6, 12, 0.95);
+            background: rgba(10, 15, 30, 0.95);
             border: 1px solid #00d2ff;
             border-radius: 10px;
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
             display: flex;
             align-items: center;
             gap: 14px; 
@@ -70,38 +70,46 @@
             white-space: nowrap;
         }
         
-        /* دکمه‌های کنترل بالای صفحه */
-        .top-action-btn {
+        /* دکمه استاپ بازی - دست‌نخورده */
+        #pauseBtn {
             padding: 7px 12px;
             font-size: 11px;
             font-weight: 800;
             color: #ffffff;
-            background: rgba(4, 6, 12, 0.95);
+            background: rgba(10, 15, 30, 0.95);
+            border: 1px solid #00d2ff;
             border-radius: 10px;
             cursor: pointer;
             pointer-events: auto;
             white-space: nowrap;
             margin-left: 8px;
             box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
-            transition: all 0.3s ease;
-        }
-        #pauseBtn {
-            border: 1px solid #00d2ff;
             display: none;
         }
         
-        /* استایل دکمه هوش مصنوعی - در ابتدا خاکستری و غیرفعال */
+        /* 🔥 اضافه شدن دکمه AI در یک جای خالی خارج از محدوده دید سفینه (گوشه پایین) */
         #aiBtn {
-            border: 1px solid #475569;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 900;
             background: rgba(30, 41, 59, 0.8);
+            border: 2px solid #475569;
             color: #94a3b8;
+            border-radius: 20px;
             cursor: not-allowed;
+            pointer-events: auto;
+            white-space: nowrap;
+            z-index: 7;
             opacity: 0.5;
-            display: none;
+            transition: all 0.3s ease;
+            display: none; /* تا بازی شروع نشود مخفی است */
         }
-        /* استایل دکمه هوش مصنوعی وقتی امتیاز به ۱۰۰ می‌رسد و فعال می‌شود */
+        /* استایل دکمه AI وقتی فعال می‌شود */
         #aiBtn.active {
-            border: 1px solid #10b981;
+            border: 2px solid #10b981;
             background: rgba(4, 120, 87, 0.9);
             color: #ffffff;
             cursor: pointer;
@@ -114,6 +122,7 @@
             100% { filter: drop-shadow(0 0 15px #10b981); }
         }
 
+        /* کنترل‌های دست‌نخورده پایین صفحه */
         #controls {
             display: flex;
             justify-content: center;
@@ -147,6 +156,7 @@
             box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.1);
         }
 
+        /* صفحات نمایش دست‌نخورده */
         .screen-overlay {
             position: absolute;
             top: 0;
@@ -160,10 +170,10 @@
             z-index: 10;
         }
         
-        #welcomeScreen { background: #030509; display: none; }
+        #welcomeScreen { background: #04060b; display: none; }
         .welcome-title {
             color: #00d2ff;
-            font-size: 36px;
+            font-size: 38px;
             font-weight: 900;
             letter-spacing: 3px;
             margin-bottom: 40px;
@@ -171,7 +181,7 @@
             text-align: center;
         }
         
-        #gameOverScreen { background: rgba(3, 5, 9, 0.96); display: none; }
+        #gameOverScreen { background: rgba(4, 6, 11, 0.96); display: none; }
         .game-over-title {
             color: #ff2222;
             font-size: 42px;
@@ -185,7 +195,7 @@
             font-size: 15px;
             font-weight: bold;
             color: #ffffff;
-            background: #0b0e14;
+            background: #0d121c;
             border: 2px solid #00d2ff;
             border-radius: 30px;
             cursor: pointer;
@@ -194,6 +204,7 @@
         }
         #restartBtn { border-color: #ff2222; box-shadow: 0 0 10px rgba(255,34,34,0.3); }
 
+        /* لایه‌های دست‌نخورده شمارش معکوس */
         #countdownOverlay {
             position: absolute;
             top: 0;
@@ -203,7 +214,7 @@
             display: none;
             align-items: center;
             justify-content: center;
-            background: rgba(2, 4, 8, 0.94);
+            background: rgba(3, 5, 10, 0.94);
             z-index: 9;
         }
         #countdownText {
@@ -214,25 +225,26 @@
             will-change: transform, opacity;
         }
 
+        /* 🔥 توست نوتیفیکیشن اختصاصی پیام رسیدن به امتیاز ۱۰۰ */
         #rewardToast {
             position: absolute;
             top: 95px;
             left: 50%;
             transform: translateX(-50%) scale(0.85);
-            background: #00d2ff;
-            color: #000000;
+            background: #10b981; /* رنگ سبز موفقیت */
+            color: #ffffff;
             padding: 14px 24px;
             font-size: 13px;
             font-weight: 900;
             border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 210, 255, 0.5);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
             z-index: 8;
             opacity: 0;
             pointer-events: none;
             transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
             width: 90%;
-            direction: rtl; /* راست‌چین برای پیام‌های فارسی ربات */
+            direction: rtl; /* راست‌چین برای پیام فارسی */
         }
         #rewardToast.show {
             opacity: 1;
@@ -251,9 +263,7 @@
             <span class="sb-item" id="sbScore">SCORE: 0</span>
             <span class="sb-item" id="sbStage">SECTOR: 1</span>
         </div>
-        <!-- اضافه شدن دکمه AI کنار دکمه Pause -->
-        <button id="aiBtn" class="top-action-btn">AI 🔒</button>
-        <button id="pauseBtn" class="top-action-btn">Pause</button>
+        <button id="pauseBtn">Pause</button>
     </div>
 
     <div id="rewardToast">شما توکن لازم برای درخواست پرامپت را جمع کرده‌اید! برای ورود به بات روی AI کلیک کنید. 🔥</div>
@@ -263,8 +273,10 @@
         <button id="btnRight" class="btn">▶</button>
     </div>
 
+    <button id="aiBtn">AI 🔒</button>
+
     <div id="welcomeScreen" class="screen-overlay">
-        <div class="welcome-title">QUANTUM TRACK</div>
+        <div class="welcome-title">ASTRO ROGUE</div>
         <button id="startBtn" class="menu-btn">Launch Ship</button>
     </div>
 
@@ -279,6 +291,7 @@
 </div>
 
 <script>
+/* تمام ساختار رندرینگ بازی آسترو روگ - دست‌نخورده است */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = true;
@@ -290,12 +303,8 @@ const countdownText = document.getElementById('countdownText');
 const startBtn = document.getElementById('startBtn');
 const restartBtn = document.getElementById('restartBtn');
 const pauseBtn = document.getElementById('pauseBtn');
-const aiBtn = document.getElementById('aiBtn');
-
-const sbPass = document.getElementById('sbPass');
-const sbScore = document.getElementById('sbScore');
-const sbStage = document.getElementById('sbStage');
 const rewardToast = document.getElementById('rewardToast');
+const aiBtn = document.getElementById('aiBtn'); // 🔥 اضافه شدن دکمه AI
 
 let score = 0;
 let currentStageIndex = 0; 
@@ -311,7 +320,7 @@ let particles = [];
 let sceneryItems = [];
 let lastSpawnLane = -1; 
 let animationFrameId = null; 
-let isAiUnlocked = false; // وضعیت قفل هوش مصنوعی
+let isAiUnlocked = false; // 🔥 وضعیت جدید قفل هوش مصنوعی
 
 let baseRoadSpeed = 560; 
 let playerSpeed = 590;
@@ -323,7 +332,6 @@ const player = {
     movingLeft: false, movingRight: false
 };
 
-// نمایش اولیه صفحه اول
 welcomeScreen.style.display = 'flex';
 
 function resizeCanvas() {
@@ -331,6 +339,65 @@ function resizeCanvas() {
     canvas.height = canvas.parentElement.clientHeight;
 }
 resizeCanvas();
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let musicTimer = 0;
+let musicStep = 0;
+
+const AstroMelody = [
+    150, 150, 0, 190, 150, 0, 230, 0,
+    150, 150, 0, 190, 150, 0, 280, 0,
+    120, 120, 0, 160, 120, 0, 200, 0,
+    180, 180, 0, 240, 180, 0, 350, 0
+];
+
+function playSoundEffect(freq, duration, vol, type = 'triangle', delay = 0) {
+    if (isPaused || !isPlaying) return; 
+    try {
+        const now = audioCtx.currentTime + delay;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(vol * 0.22, now); 
+        gain.gain.linearRampToValueAtTime(0.0001, now + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(now); osc.stop(now + duration + 0.01);
+    } catch(e) {}
+}
+
+function processInlineMusic(dt) {
+    if (!isPlaying || isPaused || isBurning) return;
+    musicTimer += dt;
+    if (musicTimer >= 0.13) {
+        musicTimer = 0;
+        const freq = AstroMelody[musicStep % AstroMelody.length];
+        musicStep++;
+        if (freq > 0) { playSoundEffect(freq, 0.09, 0.20, 'triangle'); }
+    }
+}
+
+function playClickSound() { playSoundEffect(650, 0.02, 0.10, 'sine'); }
+
+function playCosmicCrashSound() {
+    const crashSequence = [
+        {f: 240, d: 0.12, t: 'sawtooth'},
+        {f: 160, d: 0.15, t: 'sawtooth'},
+        {f: 95, d: 0.20, t: 'triangle'},
+        {f: 55, d: 0.35, t: 'triangle'}
+    ];
+    crashSequence.forEach((note, idx) => {
+        playSoundEffect(note.f, note.d, 0.35, note.t, idx * 0.07);
+    });
+}
+
+function playBeep() { playSoundEffect(750, 0.08, 0.15, 'sine'); }
+
+function playRewardSound() {
+    [466, 582, 698, 932].forEach((f, i) => {
+        playSoundEffect(f, 0.10, 0.15, 'sine', i * 0.04);
+    });
+}
 
 const spaceSectors = [
     { key: 'astro', name: 'ASTRO', color: '#facc15', type: 'STANDARD' },
@@ -377,21 +444,27 @@ function buildAllGraphicsCaches() {
 }
 buildAllGraphicsCaches();
 
+const sbPass = document.getElementById('sbPass');
+const sbScore = document.getElementById('sbScore');
+const sbStage = document.getElementById('sbStage');
+
 function updateScoreUI() {
     sbPass.innerText = `PASS: ${passedCarsCount}/10`;
     sbScore.innerText = `SCORE: ${score}`;
     sbStage.innerText = `SECTOR: ${realGameStageLevel + 1}`;
 }
 
+// 🔥 آپدیت حسگر امتیاز ۱۰۰ برای فعال کردن هوش مصنوعی (هیچ ساختاری تغییر نمی‌کند)
 function checkStageProgression() {
     passedCarsCount++;
     
-    // منطق بررسی رسیدن به امتیاز ۱۰۰ برای باز شدن هوش مصنوعی
+    // ۱. بررسی رسیدن به امتیاز ۱۰۰ و فعال کردن بخش AI
     if (score >= 100 && !isAiUnlocked) {
         isAiUnlocked = true;
-        aiBtn.classList.add('active');
-        aiBtn.innerText = "AI 🔓";
-        showToastNotification("شما توکن لازم برای درخواست پرامپت را جمع کرده‌اید! برای ورود به بات روی AI کلیک کنید. 🔥");
+        aiBtn.classList.add('active'); // تغییر ظاهر به آبی درخشان
+        aiBtn.innerText = "AI 🔓"; // تغییر متن
+        showAiRewardToast(); // نمایش پیام قشنگ روی صفحه
+        playBeep(); // یک صدای تایید
     }
 
     if (passedCarsCount >= 10) {
@@ -404,10 +477,10 @@ function checkStageProgression() {
     updateScoreUI();
 }
 
-function showToastNotification(text) {
-    rewardToast.innerText = text;
+function showAiRewardToast() {
+    rewardToast.innerText = "شما توکن لازم برای درخواست پرامپت را جمع کرده‌اید! برای ورود به بات روی AI کلیک کنید. 🔥";
     rewardToast.classList.add('show');
-    setTimeout(() => { rewardToast.classList.remove('show'); }, 4000);
+    setTimeout(() => { rewardToast.classList.remove('show'); }, 5000); // ۵ ثانیه پیام بماند
 }
 
 function initScenery() {
@@ -435,16 +508,60 @@ function updateAndDrawScenery(speed, dt) {
     }
 }
 
+class ExplodeParticle {
+    constructor(x, y, isFire = false) {
+        this.x = x; this.y = y; this.isFire = isFire;
+        this.radius = isFire ? Math.random() * 6 + 2 : Math.random() * 2.5 + 1;
+        
+        const angle = Math.random() * Math.PI * 2;
+        const speed = isFire ? Math.random() * 120 + 30 : Math.random() * 180 + 80;
+        
+        this.vx = Math.cos(angle) * speed; 
+        this.vy = isFire ? (Math.sin(angle) * speed * 0.4) - 45 : Math.sin(angle) * speed; 
+        
+        this.alpha = 1;
+        this.decay = isFire ? Math.random() * 0.9 + 0.9 : 1.6;
+        
+        if (isFire) {
+            this.color = ['#ff0055', '#ffaa00', '#00ffff', '#7700ff', '#111122'][Math.floor(Math.random() * 5)];
+        } else {
+            this.color = '#00e5ff';
+        }
+    }
+    update(dt) { 
+        this.x += this.vx * dt; 
+        this.y += this.vy * dt; 
+        this.alpha -= this.decay * dt; 
+        if (this.isFire && this.radius > 0.4) this.radius -= 1.8 * dt; 
+    }
+    draw() {
+        if (this.alpha <= 0) return;
+        ctx.save(); 
+        ctx.globalAlpha = this.alpha; 
+        ctx.fillStyle = this.color;
+        ctx.beginPath(); 
+        ctx.arc(this.x, this.y, Math.max(0.1, this.radius), 0, Math.PI * 2); 
+        ctx.fill(); 
+        ctx.restore();
+    }
+}
+
 class EnemyCar {
     constructor() {
         this.jobSpec = spaceSectors[currentStageIndex];
         this.width = (this.jobSpec.type === 'BIG_SIZE') ? 66 : 58;
         this.height = (this.jobSpec.type === 'BIG_SIZE') ? 104 : 84;
+        
         const lanes = [canvas.width * 0.23, canvas.width * 0.5, canvas.width * 0.77];
         let targetLaneIndex = Math.floor(Math.random() * lanes.length);
-        if (targetLaneIndex === lastSpawnLane) { targetLaneIndex = (targetLaneIndex + 1) % lanes.length; }
+        if (targetLaneIndex === lastSpawnLane) {
+            targetLaneIndex = (targetLaneIndex + 1) % lanes.length;
+        }
         lastSpawnLane = targetLaneIndex;
-        this.x = lanes[targetLaneIndex]; this.y = -130;
+        
+        this.x = lanes[targetLaneIndex];
+        this.y = -130;
+        
         this.speed = baseRoadSpeed - 55 + (Math.random() * 60); 
         this.passed = false;
         this.cacheKey = this.jobSpec.key + '_' + currentStageIndex;
@@ -452,26 +569,42 @@ class EnemyCar {
     update(dt) { this.y += this.speed * dt; }
     draw() {
         const imgCache = vehicleCacheCanvases[this.cacheKey];
-        if (imgCache) { ctx.drawImage(imgCache, this.x - this.width/2, this.y - this.height/2, this.width, this.height); }
+        if (imgCache) {
+            ctx.drawImage(imgCache, this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+        }
     }
 }
 
 function handleEnemies(dt) {
     if (!isPaused && !isBurning) enemySpawnTimer += dt;
+    
     let currentType = spaceSectors[currentStageIndex].type;
     let baseInterval = (currentType === 'SPEED_OBSTACLE' || currentType === 'CHAOS') ? 0.42 : 0.80 - (realGameStageLevel * 0.09);
-    if (enemySpawnTimer > Math.max(0.28, baseInterval) && !isPaused && !isBurning) {
-        enemies.push(new EnemyCar()); enemySpawnTimer = 0;
+    const spawnInterval = Math.max(0.28, baseInterval);
+    
+    if (enemySpawnTimer > spawnInterval && !isPaused && !isBurning) {
+        enemies.push(new EnemyCar());
+        enemySpawnTimer = 0;
     }
+
     for (let i = enemies.length - 1; i >= 0; i--) {
         if (!isPaused && !isBurning) enemies[i].update(dt);
         enemies[i].draw();
+
         if (!enemies[i].passed && enemies[i].y > player.y + player.height / 2) {
-            enemies[i].passed = true; score += 25; checkStageProgression();
+            enemies[i].passed = true;
+            score += 25;
+            checkStageProgression();
         }
-        if (enemies[i].y > canvas.height + 130) { enemies.splice(i, 1); continue; }
+
+        if (enemies[i].y > canvas.height + 130) {
+            enemies.splice(i, 1);
+            continue;
+        }
+
         if (!isBurning && intersects(player.x, player.y, player.width, player.height, enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height)) {
-            isBurning = true; gameOver(); return;
+            triggerCarBurnEffect();
+            return;
         }
     }
 }
@@ -480,29 +613,75 @@ function intersects(x1, y1, w1, h1, x2, y2, w2, h2) {
     return x1 - w1/2.02 < x2 + w2/2.02 && x1 + w1/2.02 > x2 - w2/2.02 && y1 - h1/2.02 < y2 + h2/2.02 && y1 + h1/2.02 > y2 - h2/2.02;
 }
 
+function triggerCarBurnEffect() {
+    isBurning = true;
+    player.movingLeft = false;
+    player.movingRight = false;
+    playCosmicCrashSound();
+    
+    let burnCounter = 0;
+    const burnInterval = setInterval(() => {
+        for (let p = 0; p < 6; p++) {
+            particles.push(new ExplodeParticle(player.x + (Math.random()*20 - 10), player.y + (Math.random()*26 - 13), true));
+        }
+        burnCounter++;
+        if (burnCounter > 16) { 
+            clearInterval(burnInterval);
+            gameOver();
+        }
+    }, 45);
+}
+
 function drawRoad(dt) {
-    ctx.fillStyle = '#0a0d14'; ctx.fillRect(canvas.width * 0.08, 0, canvas.width * 0.84, canvas.height);
-    const leftLimit = canvas.width * 0.08; const rightLimit = canvas.width * 0.92 - 6;
+    ctx.fillStyle = '#0a0d14'; // آسمان تاریک Astro Rogue
+    ctx.fillRect(canvas.width * 0.08, 0, canvas.width * 0.84, canvas.height);
+
+    const leftLimit = canvas.width * 0.08;
+    const rightLimit = canvas.width * 0.92 - 6;
+
     updateAndDrawScenery(baseRoadSpeed, dt);
-    ctx.fillStyle = '#b026ff'; ctx.fillRect(leftLimit, 0, 6, canvas.height); ctx.fillRect(rightLimit, 0, 6, canvas.height);
+
+    ctx.fillStyle = '#b026ff'; // خطوط نئونی بنفش کناره آسمان
+    ctx.fillRect(leftLimit, 0, 6, canvas.height);
+    ctx.fillRect(rightLimit, 0, 6, canvas.height);
+
     if (isPlaying && !isPaused && !isBurning) {
-        if (player.x - player.width / 1.95 <= leftLimit + 6 || player.x + player.width / 1.95 >= rightLimit) { isBurning = true; gameOver(); return; }
+        if (player.x - player.width / 1.95 <= leftLimit + 6 || player.x + player.width / 1.95 >= rightLimit) {
+            triggerCarBurnEffect();
+            return;
+        }
     }
-    ctx.fillStyle = 'rgba(0, 210, 255, 0.45)';
+
+    ctx.fillStyle = 'rgba(0, 210, 255, 0.45)'; // خطوط کوانتومی وسط جاده آسمانی
     if (!isPaused && !isBurning) roadLinesY = (roadLinesY + baseRoadSpeed * dt) % 70;
-    const lineX1 = canvas.width * 0.38 - 1.5; const lineX2 = canvas.width * 0.62 - 1.5;
-    for (let y = roadLinesY - 70; y < canvas.height; y += 70) { ctx.fillRect(lineX1, y, 3, 35); ctx.fillRect(lineX2, y, 3, 35); }
+
+    const lineX1 = canvas.width * 0.38 - 1.5;
+    const lineX2 = canvas.width * 0.62 - 1.5;
+    for (let y = roadLinesY - 70; y < canvas.height; y += 70) {
+        ctx.fillRect(lineX1, y, 3, 35);
+        ctx.fillRect(lineX2, y, 3, 35);
+    }
 }
 
 function startCountdown() {
-    welcomeScreen.style.display = 'none'; gameOverScreen.style.display = 'none'; pauseBtn.style.display = 'none'; aiBtn.style.display = 'none';
-    countdownOverlay.style.display = 'flex';
-    let states = ['3', '2', '1']; let current = 0;
+    welcomeScreen.style.display = 'none'; gameOverScreen.style.display = 'none'; pauseBtn.style.display = 'none';
+    countdownOverlay.style.display = 'flex'; aiBtn.style.display = 'none'; // 🔥 مخفی کردن دکمه در زمان شمارش
+    let states = ['3', '2', '1'];
+    let current = 0;
     function nextTick() {
-        if (current < states.length) { countdownText.innerText = states[current]; current++; setTimeout(nextTick, 700); } else {
-            countdownOverlay.style.display = 'none'; isPlaying = true; isPaused = false; isBurning = false;
-            pauseBtn.innerText = "Pause"; pauseBtn.style.display = 'block'; aiBtn.style.display = 'block';
-            lastTime = performance.now(); if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        if (current < states.length) {
+            countdownText.innerText = states[current];
+            current++;
+            setTimeout(nextTick, 700); 
+        } else {
+            countdownOverlay.style.display = 'none';
+            playBeep();
+            isPlaying = true; isPaused = false; isBurning = false;
+            pauseBtn.innerText = "Pause"; pauseBtn.style.display = 'block';
+            aiBtn.style.display = 'block'; // 🔥 ظاهر کردن دکمه در زمان بازی
+            lastTime = performance.now();
+            musicTimer = 0; musicStep = 0;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
             animationFrameId = requestAnimationFrame(loop);
         }
     }
@@ -510,40 +689,70 @@ function startCountdown() {
 }
 
 pauseBtn.addEventListener('click', () => {
-    if (isBurning) return; isPaused = !isPaused; pauseBtn.innerText = isPaused ? "Resume" : "Pause";
-    if (!isPaused) { lastTime = performance.now(); animationFrameId = requestAnimationFrame(loop); }
+    if (isBurning) return;
+    isPaused = !isPaused;
+    pauseBtn.innerText = isPaused ? "Resume" : "Pause";
+    if (!isPaused) { 
+        lastTime = performance.now(); 
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(loop); 
+    }
 });
 
-// عملکرد دکمه هوش مصنوعی برای خروج اتوماتیک و ورود به چت ربات تلگرام
+// 🔥 عملکرد دکمه هوش مصنوعی برای Deep Linking به تلگرام
 aiBtn.addEventListener('click', () => {
     if (!isAiUnlocked) return; // اگر قفل باز نباشد کاری نکن
     
-    // هدایت مستقیم کاربر به چت تلگرام ربات و فعال کردن استارت خودکار
-    // آیدی ربات خودت را جایگزین "your_bot_username" کن
-    const botUsername = "2049044424"; 
-    window.location.href = `https://t.me/${botUsername}?start=ai_access`;
+    playClickSound();
+    
+    // هدایت مستقیم کاربر به چت تلگرام ربات با دکمه استارت فعال
+    // آیدی ربات خودت را جایگزین "your_astro_rogue_bot_username" کن
+    const botUsername = "your_astro_rogue_bot_username"; 
+    const aiAccessParam = "ai_prompt_access"; // یک پارامتر که بات بفهمد قفل باز شده
+    
+    window.location.href = `https://t.me/${botUsername}?start=${aiAccessParam}`;
 });
 
-function gameOver() { isPlaying = false; pauseBtn.style.display = 'none'; gameOverScreen.style.display = 'flex'; }
+function gameOver() { 
+    isPlaying = false; 
+    pauseBtn.style.display = 'none'; 
+    aiBtn.style.display = 'none'; // 🔥 مخفی کردن دکمه AI زمان باخت
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    gameOverScreen.style.display = 'flex'; 
+}
 
 function resetGame() {
-    score = 0; currentStageIndex = 0; passedCarsCount = 0; lastSpawnLane = -1; realGameStageLevel = 0;
-    baseRoadSpeed = 560; playerSpeed = 590; isBurning = false;
-    player.movingLeft = false; player.movingRight = false;
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+    score = 0; currentStageIndex = 0; passedCarsCount = 0; lastSpawnLane = -1;
+    realGameStageLevel = 0;
+    baseRoadSpeed = 560;
+    playerSpeed = 590;
+    isBurning = false;
+    player.movingLeft = false;
+    player.movingRight = false;
     
-    // ریست کردن وضعیت دکمه هوش مصنوعی در هر بازی جدید
+    // 🔥 ریست کردن وضعیت دکمه هوش مصنوعی در هر بازی جدید
     isAiUnlocked = false;
     aiBtn.classList.remove('active');
     aiBtn.innerText = "AI 🔒";
     
-    updateScoreUI(); resizeCanvas(); player.x = canvas.width / 2; player.y = 520;
-    enemies = []; enemySpawnTimer = -0.1; initScenery(); startCountdown();
+    updateScoreUI();
+    
+    resizeCanvas();
+    player.x = canvas.width / 2; player.y = 520; 
+    enemies = []; particles = []; enemySpawnTimer = -0.1;
+    initScenery();
+    startCountdown();
 }
 
 function loop(currentTime) {
     if (!isPlaying || isPaused) return;
-    let dt = (currentTime - lastTime) / 1000; if (dt > 0.05) dt = 0.016; lastTime = currentTime;
-    ctx.clearRect(0, 0, canvas.width, canvas.height); drawRoad(dt);
+    let dt = (currentTime - lastTime) / 1000;
+    if (dt > 0.05) dt = 0.016; 
+    lastTime = currentTime;
+    processInlineMusic(dt);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawRoad(dt);
     if (isPlaying && !isPaused && !isBurning) {
         if (player.movingLeft) player.x -= playerSpeed * dt;
         if (player.movingRight) player.x += playerSpeed * dt;
@@ -552,19 +761,27 @@ function loop(currentTime) {
         const pCache = vehicleCacheCanvases['player'];
         if (pCache) { ctx.drawImage(pCache, player.x - player.width/2, player.y - player.height/2, player.width, player.height); }
     }
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update(dt); particles[i].draw();
+        if (particles[i].alpha <= 0) particles.splice(i, 1);
+    }
     handleEnemies(dt);
     if (isPlaying && !isPaused) animationFrameId = requestAnimationFrame(loop);
 }
 
 const btnLeft = document.getElementById('btnLeft'); const btnRight = document.getElementById('btnRight');
-btnLeft.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); player.movingLeft = true; }, { passive: false });
-btnLeft.addEventListener('touchend', () => player.movingLeft = false);
-btnRight.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); player.movingRight = true; }, { passive: false });
-btnRight.addEventListener('touchend', () => player.movingRight = false);
-
+btnLeft.addEventListener('mousedown', (e) => { if(!isPaused && !isBurning) { player.movingLeft = true; player.movingRight = false; playClickSound(); } });
+btnLeft.addEventListener('mouseup', () => player.movingLeft = false);
+btnLeft.addEventListener('mouseleave', () => player.movingLeft = false);
+btnLeft.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); if(!isPaused && !isBurning) { player.movingLeft = true; player.movingRight = false; playClickSound(); } }, { passive: false });
+btnLeft.addEventListener('touchend', (e) => { if (e.cancelable) e.preventDefault(); player.movingLeft = false; }, { passive: false });
+btnRight.addEventListener('mousedown', (e) => { if(!isPaused && !isBurning) { player.movingRight = true; player.movingLeft = false; playClickSound(); } });
+btnRight.addEventListener('mouseup', () => player.movingRight = false);
+btnRight.addEventListener('mouseleave', () => player.movingRight = false);
+btnRight.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); if(!isPaused && !isBurning) { player.movingRight = true; player.movingLeft = false; playClickSound(); } }, { passive: false });
+btnRight.addEventListener('touchend', (e) => { if (e.cancelable) e.preventDefault(); player.movingRight = false; }, { passive: false });
 startBtn.addEventListener('click', resetGame); restartBtn.addEventListener('click', resetGame);
 window.addEventListener('load', () => { resizeCanvas(); player.x = canvas.width / 2; player.y = 520; initScenery(); });
 </script>
 </body>
 </html>
-
