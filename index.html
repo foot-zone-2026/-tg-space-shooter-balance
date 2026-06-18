@@ -1,787 +1,407 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Astro Rogue - AI Prompt Edition</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        /* استایل‌های اصلی و دست‌نخورده بازی آسترو روگ */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            background-color: #030509; /* آسمان تاریک آسترو روگ */
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        #gameContainer {
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            height: 100vh;
-            background: #060912;
-            overflow: hidden;
-        }
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        
-        /* بخش بالای صفحه - ساختار جایزه و امتیاز دست‌نخورده است */
-        #topBar {
-            position: absolute;
-            top: 15px;
-            left: 0;
-            width: 100%;
-            padding: 0 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 6;
-            pointer-events: none;
-        }
-        #scoreBoard {
-            color: #ffffff;
-            font-size: 11px; 
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            background: rgba(10, 15, 30, 0.95);
-            border: 1px solid #00d2ff;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 14px; 
-            padding: 8px 14px; 
-            flex-grow: 1;
-            filter: drop-shadow(0 0 5px rgba(0, 210, 255, 0.6));
-        }
-        .sb-item {
-            white-space: nowrap;
-        }
-        
-        /* دکمه استاپ بازی - دست‌نخورده */
-        #pauseBtn {
-            padding: 7px 12px;
-            font-size: 11px;
-            font-weight: 800;
-            color: #ffffff;
-            background: rgba(10, 15, 30, 0.95);
-            border: 1px solid #00d2ff;
-            border-radius: 10px;
-            cursor: pointer;
-            pointer-events: auto;
-            white-space: nowrap;
-            margin-left: 8px;
-            box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
-            display: none;
-        }
-        
-        /* 🔥 اضافه شدن دکمه AI در یک جای خالی خارج از محدوده دید سفینه (گوشه پایین) */
-        #aiBtn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            padding: 10px 18px;
-            font-size: 13px;
-            font-weight: 900;
-            background: rgba(30, 41, 59, 0.8);
-            border: 2px solid #475569;
-            color: #94a3b8;
-            border-radius: 20px;
-            cursor: not-allowed;
-            pointer-events: auto;
-            white-space: nowrap;
-            z-index: 7;
-            opacity: 0.5;
-            transition: all 0.3s ease;
-            display: none; /* تا بازی شروع نشود مخفی است */
-        }
-        /* استایل دکمه AI وقتی فعال می‌شود */
-        #aiBtn.active {
-            border: 2px solid #10b981;
-            background: rgba(4, 120, 87, 0.9);
-            color: #ffffff;
-            cursor: pointer;
-            opacity: 1;
-            filter: drop-shadow(0 0 10px #10b981);
-            animation: pulseGlow 1.5s infinite alternate;
-        }
-        @keyframes pulseGlow {
-            0% { filter: drop-shadow(0 0 5px #10b981); }
-            100% { filter: drop-shadow(0 0 15px #10b981); }
-        }
+import { useState, useRef, useEffect } from "react";
 
-        /* کنترل‌های دست‌نخورده پایین صفحه */
-        #controls {
-            display: flex;
-            justify-content: center;
-            gap: 85px;
-            align-items: center;
-            width: 100%;
-            position: absolute;
-            bottom: 45px; 
-            padding: 0 25px;
-            pointer-events: none;
-            z-index: 5;
-        }
-        .btn {
-            width: 82px;
-            height: 82px;
-            border: 2px solid rgba(0, 210, 255, 0.3);
-            border-radius: 50%;
-            color: #00d2ff;
-            font-size: 30px;
-            background: rgba(0, 210, 255, 0.05);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            cursor: pointer;
-            outline: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            touch-action: none;
-            will-change: transform;
-            box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.1);
-        }
+const APO_IMG = "data:image/jpeg;base64,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";
 
-        /* صفحات نمایش دست‌نخورده */
-        .screen-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-        
-        #welcomeScreen { background: #04060b; display: none; }
-        .welcome-title {
-            color: #00d2ff;
-            font-size: 38px;
-            font-weight: 900;
-            letter-spacing: 3px;
-            margin-bottom: 40px;
-            filter: drop-shadow(0 0 12px rgba(0, 210, 255, 0.8));
-            text-align: center;
-        }
-        
-        #gameOverScreen { background: rgba(4, 6, 11, 0.96); display: none; }
-        .game-over-title {
-            color: #ff2222;
-            font-size: 42px;
-            font-weight: 900;
-            margin-bottom: 40px;
-            text-shadow: 0 0 25px rgba(255, 34, 34, 0.5);
-        }
-        
-        .menu-btn {
-            padding: 15px 50px;
-            font-size: 15px;
-            font-weight: bold;
-            color: #ffffff;
-            background: #0d121c;
-            border: 2px solid #00d2ff;
-            border-radius: 30px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
-        }
-        #restartBtn { border-color: #ff2222; box-shadow: 0 0 10px rgba(255,34,34,0.3); }
+function ApoAvatar({ size = 44 }) {
+  return (
+    <img src={APO_IMG} alt="APO"
+      style={{width:size,height:size,borderRadius:"50%",objectFit:"cover",objectPosition:"top",display:"block"}}
+    />
+  );
+}
 
-        /* لایه‌های دست‌نخورده شمارش معکوس */
-        #countdownOverlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: rgba(3, 5, 10, 0.94);
-            z-index: 9;
-        }
-        #countdownText {
-            font-size: 250px; 
-            font-weight: 900;
-            color: #ffdf00; 
-            filter: drop-shadow(0 0 15px #d4af37) drop-shadow(0 0 40px #aa7c11);
-            will-change: transform, opacity;
-        }
+function MiniApo() {
+  return (
+    <div style={{width:36,height:36,borderRadius:"50%",border:"2px solid #22C55E",overflow:"hidden",flexShrink:0}}>
+      <img src={APO_IMG} alt="APO" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+    </div>
+  );
+}
 
-        /* 🔥 توست نوتیفیکیشن اختصاصی پیام رسیدن به امتیاز ۱۰۰ */
-        #rewardToast {
-            position: absolute;
-            top: 95px;
-            left: 50%;
-            transform: translateX(-50%) scale(0.85);
-            background: #10b981; /* رنگ سبز موفقیت */
-            color: #ffffff;
-            padding: 14px 24px;
-            font-size: 13px;
-            font-weight: 900;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
-            z-index: 8;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
-            width: 90%;
-            direction: rtl; /* راست‌چین برای پیام فارسی */
-        }
-        #rewardToast.show {
-            opacity: 1;
-            transform: translateX(-50%) scale(1);
-        }
-    </style>
-</head>
-<body>
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-<div id="gameContainer">
-    <canvas id="gameCanvas"></canvas>
-    
-    <div id="topBar">
-        <div id="scoreBoard">
-            <span class="sb-item" id="sbPass">PASS: 0/10</span>
-            <span class="sb-item" id="sbScore">SCORE: 0</span>
-            <span class="sb-item" id="sbStage">SECTOR: 1</span>
+function renderMsg(text) {
+  if (!text) return null;
+  return text.split("\n").map((line, i) => {
+    if (line.startsWith("### ")) return <h4 key={i} style={{color:"#16a34a",margin:"10px 0 4px",fontSize:14,fontWeight:700}}>{line.slice(4)}</h4>;
+    if (line.startsWith("## ")) return <h3 key={i} style={{color:"#0f172a",margin:"12px 0 6px",fontSize:16,fontWeight:700}}>{line.slice(3)}</h3>;
+    if (line.startsWith("- ")||line.startsWith("• ")) return (
+      <div key={i} style={{display:"flex",gap:7,margin:"3px 0"}}>
+        <span style={{color:"#22C55E",flexShrink:0,marginTop:2}}>◦</span>
+        <span style={{fontSize:14,lineHeight:1.75,color:"#1e293b"}}>{fmt(line.slice(2))}</span>
+      </div>
+    );
+    if (/^\d+\.\s/.test(line)) {
+      const num = line.match(/^(\d+)\./)[1];
+      return (
+        <div key={i} style={{display:"flex",gap:7,margin:"3px 0"}}>
+          <span style={{color:"#22C55E",fontWeight:700,fontSize:13,minWidth:18,flexShrink:0}}>{num}.</span>
+          <span style={{fontSize:14,lineHeight:1.75,color:"#1e293b"}}>{fmt(line.replace(/^\d+\.\s/,""))}</span>
         </div>
-        <button id="pauseBtn">Pause</button>
-    </div>
-
-    <div id="rewardToast">شما توکن لازم برای درخواست پرامپت را جمع کرده‌اید! برای ورود به بات روی AI کلیک کنید. 🔥</div>
-    
-    <div id="controls">
-        <button id="btnLeft" class="btn">◀</button>
-        <button id="btnRight" class="btn">▶</button>
-    </div>
-
-    <button id="aiBtn">AI 🔒</button>
-
-    <div id="welcomeScreen" class="screen-overlay">
-        <div class="welcome-title">ASTRO ROGUE</div>
-        <button id="startBtn" class="menu-btn">Launch Ship</button>
-    </div>
-
-    <div id="gameOverScreen" class="screen-overlay">
-        <div class="game-over-title">CRITICAL CRASH</div>
-        <button id="restartBtn" class="menu-btn">Respawn Ship</button>
-    </div>
-
-    <div id="countdownOverlay">
-        <div id="countdownText">3</div>
-    </div>
-</div>
-
-<script>
-/* تمام ساختار رندرینگ بازی آسترو روگ - دست‌نخورده است */
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = true;
-
-const welcomeScreen = document.getElementById('welcomeScreen');
-const gameOverScreen = document.getElementById('gameOverScreen');
-const countdownOverlay = document.getElementById('countdownOverlay');
-const countdownText = document.getElementById('countdownText');
-const startBtn = document.getElementById('startBtn');
-const restartBtn = document.getElementById('restartBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const rewardToast = document.getElementById('rewardToast');
-const aiBtn = document.getElementById('aiBtn'); // 🔥 اضافه شدن دکمه AI
-
-let score = 0;
-let currentStageIndex = 0; 
-let passedCarsCount = 0; 
-let isPlaying = false;
-let isPaused = false; 
-let isBurning = false; 
-let lastTime = 0;
-let roadLinesY = 0;
-let enemySpawnTimer = 0;
-let enemies = [];
-let particles = [];
-let sceneryItems = [];
-let lastSpawnLane = -1; 
-let animationFrameId = null; 
-let isAiUnlocked = false; // 🔥 وضعیت جدید قفل هوش مصنوعی
-
-let baseRoadSpeed = 560; 
-let playerSpeed = 590;
-let realGameStageLevel = 0; 
-
-const player = {
-    x: 250, y: 520, 
-    width: 58, height: 84, 
-    movingLeft: false, movingRight: false
-};
-
-welcomeScreen.style.display = 'flex';
-
-function resizeCanvas() {
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
+      );
+    }
+    if (line.trim()==="---") return <hr key={i} style={{border:"none",borderTop:"1px solid #e2e8f0",margin:"10px 0"}}/>;
+    if (line.trim()==="") return <div key={i} style={{height:5}}/>;
+    return <p key={i} style={{margin:"3px 0",fontSize:14,lineHeight:1.85,color:"#1e293b"}}>{fmt(line)}</p>;
+  });
 }
-resizeCanvas();
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let musicTimer = 0;
-let musicStep = 0;
+function fmt(text) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((p,i) =>
+    p.startsWith("**")&&p.endsWith("**")
+      ? <strong key={i} style={{color:"#0f172a",fontWeight:700}}>{p.slice(2,-2)}</strong>
+      : p
+  );
+}
 
-const AstroMelody = [
-    150, 150, 0, 190, 150, 0, 230, 0,
-    150, 150, 0, 190, 150, 0, 280, 0,
-    120, 120, 0, 160, 120, 0, 200, 0,
-    180, 180, 0, 240, 180, 0, 350, 0
-];
+function IntroScreen({ onDone }) {
+  const [phase, setPhase] = useState("show");
+  const [dots, setDots] = useState(0);
+  const [nameOn, setNameOn] = useState(false);
+  useEffect(() => {
+    const t1 = setTimeout(() => setNameOn(true), 800);
+    const t2 = setTimeout(() => setPhase("dots"), 2000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+  useEffect(() => {
+    if (phase !== "dots") return;
+    let c = 0;
+    const iv = setInterval(() => {
+      c++; setDots(c % 4);
+      if (c >= 10) { clearInterval(iv); setPhase("fade"); setTimeout(onDone, 500); }
+    }, 280);
+    return () => clearInterval(iv);
+  }, [phase]);
+  return (
+    <div style={{position:"fixed",inset:0,background:"white",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:200,opacity:phase==="fade"?0:1,transition:phase==="fade"?"opacity .6s":"none"}}>
+      <div style={{animation:"float 2.5s ease-in-out infinite",marginBottom:24}}>
+        <img src={APO_IMG} alt="APO"
+          style={{width:160,height:160,borderRadius:"50%",objectFit:"cover",objectPosition:"top",
+            boxShadow:"0 16px 48px rgba(34,197,94,0.25), 0 4px 16px rgba(0,0,0,0.1)",
+            border:"4px solid #22C55E"}}
+        />
+      </div>
+      <div style={{opacity:nameOn?1:0,transform:nameOn?"translateY(0)":"translateY(14px)",transition:"all .7s ease",textAlign:"center"}}>
+        <div style={{fontSize:38,fontWeight:900,color:"#0f172a",letterSpacing:"-1px"}}>
+          APO<span style={{color:"#22C55E"}}>.</span>
+        </div>
+        <div style={{fontSize:13,color:"#94a3b8",marginTop:5}}>Football Expert</div>
+      </div>
+      {phase==="dots" && (
+        <div style={{marginTop:28,display:"flex",gap:8}}>
+          {[0,1,2].map(i=>(
+            <div key={i} style={{width:9,height:9,borderRadius:"50%",background:i<dots?"#22C55E":"#e2e8f0",transition:"background .2s",boxShadow:i<dots?"0 0 8px #22C55E":"none"}}/>
+          ))}
+        </div>
+      )}
+      <style>{`@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}`}</style>
+    </div>
+  );
+}
 
-function playSoundEffect(freq, duration, vol, type = 'triangle', delay = 0) {
-    if (isPaused || !isPlaying) return; 
+function HistoryPanel({ convos, onSelect, onClose, onNew, visible }) {
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:50,display:"flex",pointerEvents:visible?"all":"none"}}>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position:"absolute",inset:0,
+        background:"rgba(0,0,0,0.3)",
+        opacity:visible?1:0,
+        transition:"opacity .3s ease",
+        backdropFilter:visible?"blur(2px)":"none",
+      }}/>
+      {/* Panel */}
+      <div style={{
+        position:"relative",
+        width:300,
+        background:"white",
+        height:"100%",
+        boxShadow:"4px 0 32px rgba(0,0,0,0.15)",
+        display:"flex",
+        flexDirection:"column",
+        zIndex:1,
+        transform:visible?"translateX(0)":"translateX(-100%)",
+        transition:"transform .35s cubic-bezier(0.4,0,0.2,1)",
+      }}>
+        <div style={{padding:"20px 16px 14px",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",gap:12}}>
+          <div style={{width:38,height:38,borderRadius:"50%",overflow:"hidden",border:"2px solid #22C55E",flexShrink:0}}>
+            <img src={APO_IMG} alt="APO" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+          </div>
+          <span style={{fontWeight:800,fontSize:16,color:"#0f172a",flex:1,letterSpacing:"-0.3px"}}>APO</span>
+          <button onClick={onClose} style={{background:"none",border:"none",fontSize:22,color:"#94a3b8",cursor:"pointer",lineHeight:1}}>×</button>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:"10px"}}>
+          {convos.length===0
+            ? <div style={{textAlign:"center",padding:"40px 16px",color:"#94a3b8",fontSize:13}}>No chats yet</div>
+            : convos.map(c=>(
+              <div key={c.id} onClick={()=>{onSelect(c);onClose();}}
+                style={{padding:"12px 14px",borderRadius:12,cursor:"pointer",marginBottom:6,border:"1px solid #f1f5f9",transition:"all .15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="#f0fdf4";e.currentTarget.style.borderColor="#86efac";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="white";e.currentTarget.style.borderColor="#f1f5f9";}}>
+                <div style={{fontSize:13,fontWeight:600,color:"#1e293b",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>⚽ {c.title}</div>
+                <div style={{fontSize:11,color:"#94a3b8",marginTop:3}}>{c.time}</div>
+              </div>
+            ))
+          }
+        </div>
+        <div style={{padding:"12px 16px 16px",borderTop:"1px solid #f1f5f9"}}>
+          <button onClick={()=>{onNew();onClose();}} style={{width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#22C55E,#16a34a)",color:"white",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+            + New Chat
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const SYSTEM = `You are "APO" — a world-class football expert chatbot with real-time internet access via web search.
+
+LANGUAGE RULE (most important):
+Detect the language the user writes in and ALWAYS reply in that EXACT same language. Mirror their language perfectly — if they write in Persian, reply in Persian; Spanish → Spanish; French → French; Arabic → Arabic; Turkish → Turkish; German → German; etc. Any language in the world.
+
+COMPLETENESS RULE (critical):
+Always write COMPLETE, thorough answers. Never stop mid-sentence. Never truncate. Write everything needed. A complete answer is mandatory.
+
+FOOTBALL RULES:
+1. You are an expert on football (soccer) from EVERY country in the world — leagues, national teams, players, coaches, history, tactics, transfers, results, standings, records, rules — everything football-related globally.
+2. Only answer football-related questions. If the question is not about football, politely say your expertise is only football, in the user's language.
+3. If asked to create/generate an image, politely decline.
+4. If an image is sent with a football question, analyze it and answer.
+5. Use real stats, numbers, football emojis ⚽🏆🔥, and good formatting (bullet lists, bold, headers).`;
+
+export default function ApoBot() {
+  const [ready, setReady] = useState(false);
+  const [msgs, setMsgs] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [streamText, setStreamText] = useState("");
+  const bottomRef = useRef(null);
+  const inputRef = useRef(null);
+  const isStreaming = useRef(false);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [msgs, streamText]);
+
+  // ── Storage helpers ──
+  const storeConvos = (list) => {
+    try { window.storage.set("apo_convos", JSON.stringify(list)); } catch {}
+  };
+
+  const addConvo = (messages, curConvos) => {
+    if (messages.length < 2) return curConvos;
+    const title = messages[0].content.slice(0, 40) + (messages[0].content.length > 40 ? "..." : "");
+    const now = new Date();
+    const time = now.getHours() + ":" + String(now.getMinutes()).padStart(2,"0") + " — " + (now.getMonth()+1) + "/" + now.getDate();
+    const updated = [{ id: Date.now(), title, time, messages }, ...curConvos.slice(0, 19)];
+    setConvos(updated);
+    storeConvos(updated);
+    return updated;
+  };
+
+  // Load from storage on mount
+  useEffect(() => {
     try {
-        const now = audioCtx.currentTime + delay;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(vol * 0.22, now); 
-        gain.gain.linearRampToValueAtTime(0.0001, now + duration);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + duration + 0.01);
-    } catch(e) {}
-}
-
-function processInlineMusic(dt) {
-    if (!isPlaying || isPaused || isBurning) return;
-    musicTimer += dt;
-    if (musicTimer >= 0.13) {
-        musicTimer = 0;
-        const freq = AstroMelody[musicStep % AstroMelody.length];
-        musicStep++;
-        if (freq > 0) { playSoundEffect(freq, 0.09, 0.20, 'triangle'); }
-    }
-}
-
-function playClickSound() { playSoundEffect(650, 0.02, 0.10, 'sine'); }
-
-function playCosmicCrashSound() {
-    const crashSequence = [
-        {f: 240, d: 0.12, t: 'sawtooth'},
-        {f: 160, d: 0.15, t: 'sawtooth'},
-        {f: 95, d: 0.20, t: 'triangle'},
-        {f: 55, d: 0.35, t: 'triangle'}
-    ];
-    crashSequence.forEach((note, idx) => {
-        playSoundEffect(note.f, note.d, 0.35, note.t, idx * 0.07);
-    });
-}
-
-function playBeep() { playSoundEffect(750, 0.08, 0.15, 'sine'); }
-
-function playRewardSound() {
-    [466, 582, 698, 932].forEach((f, i) => {
-        playSoundEffect(f, 0.10, 0.15, 'sine', i * 0.04);
-    });
-}
-
-const spaceSectors = [
-    { key: 'astro', name: 'ASTRO', color: '#facc15', type: 'STANDARD' },
-    { key: 'meteor', name: 'METEOR', color: '#334155', type: 'SPEED_OBSTACLE' }, 
-    { key: 'comet', name: 'COMET', color: '#c084fc', type: 'NEW_COLOR' },     
-    { key: 'orbit', name: 'ORBIT', color: '#0284c7', type: 'BIG_SIZE' },       
-    { key: 'nova', name: 'NOVA', color: '#dc2626', type: 'CHAOS' }             
-];
-
-const vehicleCacheCanvases = {};
-
-function generateVehicleGraphicsCache(key, color, name, isPlayer = false) {
-    const w = 90, h = 130;
-    const cacheCanvas = document.createElement('canvas');
-    cacheCanvas.width = w; cacheCanvas.height = h;
-    const c = cacheCanvas.getContext('2d');
-    c.fillStyle = isPlayer ? 'rgba(0, 229, 255, 0.35)' : 'rgba(255, 68, 0, 0.25)';
-    c.beginPath(); c.arc(45, 110, 22, 0, Math.PI * 2); c.fill();
-    c.fillStyle = color;
-    c.beginPath();
-    if (isPlayer) {
-        c.moveTo(45, 12); c.lineTo(76, 82); c.lineTo(62, 102); c.lineTo(45, 90); c.lineTo(28, 102); c.lineTo(14, 82);
-    } else {
-        c.moveTo(45, 106); c.lineTo(76, 36); c.lineTo(60, 16); c.lineTo(45, 26); c.lineTo(30, 16); c.lineTo(14, 36);
-    }
-    c.closePath(); c.fill();
-    c.lineWidth = 1.8; c.strokeStyle = '#05070a'; c.stroke();
-    c.fillStyle = 'rgba(15, 23, 42, 0.9)';
-    c.beginPath();
-    if (isPlayer) { c.ellipse(45, 52, 12, 22, 0, 0, Math.PI * 2); } else { c.ellipse(45, 62, 14, 16, 0, 0, Math.PI * 2); }
-    c.fill();
-    c.fillStyle = isPlayer ? '#ffffff' : '#ff3333';
-    c.fillRect(18, 70, 4, 14); c.fillRect(68, 70, 4, 14);
-    c.fillStyle = '#ffffff'; c.font = '900 9px monospace'; c.textAlign = 'center';
-    c.fillText(name, 45, isPlayer ? 84 : 48);
-    vehicleCacheCanvases[key] = cacheCanvas;
-}
-
-function buildAllGraphicsCaches() {
-    generateVehicleGraphicsCache('player', '#00e5ff', 'ALPHA', true);
-    spaceSectors.forEach((sector, idx) => {
-        generateVehicleGraphicsCache(sector.key + '_' + idx, sector.color, sector.name, false);
-    });
-}
-buildAllGraphicsCaches();
-
-const sbPass = document.getElementById('sbPass');
-const sbScore = document.getElementById('sbScore');
-const sbStage = document.getElementById('sbStage');
-
-function updateScoreUI() {
-    sbPass.innerText = `PASS: ${passedCarsCount}/10`;
-    sbScore.innerText = `SCORE: ${score}`;
-    sbStage.innerText = `SECTOR: ${realGameStageLevel + 1}`;
-}
-
-// 🔥 آپدیت حسگر امتیاز ۱۰۰ برای فعال کردن هوش مصنوعی (هیچ ساختاری تغییر نمی‌کند)
-function checkStageProgression() {
-    passedCarsCount++;
-    
-    // ۱. بررسی رسیدن به امتیاز ۱۰۰ و فعال کردن بخش AI
-    if (score >= 100 && !isAiUnlocked) {
-        isAiUnlocked = true;
-        aiBtn.classList.add('active'); // تغییر ظاهر به آبی درخشان
-        aiBtn.innerText = "AI 🔓"; // تغییر متن
-        showAiRewardToast(); // نمایش پیام قشنگ روی صفحه
-        playBeep(); // یک صدای تایید
-    }
-
-    if (passedCarsCount >= 10) {
-        passedCarsCount = 0;
-        currentStageIndex = (currentStageIndex < spaceSectors.length - 1) ? currentStageIndex + 1 : 0;
-        realGameStageLevel++;
-        baseRoadSpeed = 560 + (realGameStageLevel * 140);
-        playerSpeed = 590 + (realGameStageLevel * 75);
-    }
-    updateScoreUI();
-}
-
-function showAiRewardToast() {
-    rewardToast.innerText = "شما توکن لازم برای درخواست پرامپت را جمع کرده‌اید! برای ورود به بات روی AI کلیک کنید. 🔥";
-    rewardToast.classList.add('show');
-    setTimeout(() => { rewardToast.classList.remove('show'); }, 5000); // ۵ ثانیه پیام بماند
-}
-
-function initScenery() {
-    sceneryItems = [];
-    const plasmaColors = ['#ff007f', '#00f5ff', '#ffdf00'];
-    for (let y = -100; y < canvas.height + 100; y += 190) {
-        sceneryItems.push({ x: canvas.width * 0.04, y: y, color: plasmaColors[Math.floor(Math.random() * 3)] });
-        sceneryItems.push({ x: canvas.width * 0.96, y: y + 95, color: plasmaColors[Math.floor(Math.random() * 3)] });
-    }
-}
-
-function updateAndDrawScenery(speed, dt) {
-    ctx.fillStyle = '#060a12';
-    ctx.fillRect(0, 0, canvas.width * 0.08, canvas.height);
-    ctx.fillRect(canvas.width * 0.92, 0, canvas.width * 0.08, canvas.height);
-    for(let i=0; i<sceneryItems.length; i++) {
-        const item = sceneryItems[i];
-        if (isPlaying && !isPaused && !isBurning) item.y += speed * dt;
-        if (item.y > canvas.height + 25) item.y = -25;
-        ctx.fillStyle = item.color;
-        ctx.beginPath(); ctx.arc(item.x - 4, item.y, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(item.x + 4, item.y, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(item.x, item.y, 3, 0, Math.PI * 2); ctx.fill();
-    }
-}
-
-class ExplodeParticle {
-    constructor(x, y, isFire = false) {
-        this.x = x; this.y = y; this.isFire = isFire;
-        this.radius = isFire ? Math.random() * 6 + 2 : Math.random() * 2.5 + 1;
-        
-        const angle = Math.random() * Math.PI * 2;
-        const speed = isFire ? Math.random() * 120 + 30 : Math.random() * 180 + 80;
-        
-        this.vx = Math.cos(angle) * speed; 
-        this.vy = isFire ? (Math.sin(angle) * speed * 0.4) - 45 : Math.sin(angle) * speed; 
-        
-        this.alpha = 1;
-        this.decay = isFire ? Math.random() * 0.9 + 0.9 : 1.6;
-        
-        if (isFire) {
-            this.color = ['#ff0055', '#ffaa00', '#00ffff', '#7700ff', '#111122'][Math.floor(Math.random() * 5)];
-        } else {
-            this.color = '#00e5ff';
+      window.storage.get("apo_convos").then(res => {
+        if (res && res.value) {
+          const parsed = JSON.parse(res.value);
+          if (Array.isArray(parsed)) setConvos(parsed);
         }
+      }).catch(() => {});
+    } catch {}
+  }, []);
+
+  const newChat = () => {
+    if (msgs.length > 1) addConvo(msgs, convos);
+    setMsgs([]); setInput("");
+  };
+
+  const loadConvo = (c) => {
+    setMsgs(c.messages);
+  };
+
+  const send = async () => {
+    const q = input.trim();
+    if (!q || loading) return;
+    const userMsg = { role:"user", content:q, id:Date.now() };
+    setMsgs(p => [...p, userMsg]);
+    setInput("");
+    setLoading(true); setStreamText("");
+
+    const apiMessages = [{ role: userMsg.role, content: userMsg.content }];
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          model:"claude-sonnet-4-6",
+          max_tokens:4000,
+          system:SYSTEM,
+          messages: apiMessages,
+        }),
+      });
+      const data = await res.json();
+      const reply = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n") || "Sorry, something went wrong.";
+
+      isStreaming.current = true;
+      let out = "";
+      for (let i=0; i<reply.length; i++) {
+        if (!isStreaming.current) break;
+        out += reply[i]; setStreamText(out);
+        if (i%6===0) await sleep(1);
+      }
+      const aiMsg = {role:"assistant",content:reply,id:Date.now()};
+      setMsgs(p => {
+        const updated = [...p, aiMsg];
+        // auto-save with latest msgs
+        try {
+          const allMsgs = [...msgs, userMsg, aiMsg];
+          addConvo(allMsgs, convos);
+        } catch {}
+        return updated;
+      });
+      setStreamText(""); isStreaming.current=false;
+    } catch {
+      setMsgs(p=>[...p,{role:"assistant",content:"⚠️ Connection error. Please try again.",id:Date.now()}]);
+      setStreamText("");
+    } finally {
+      setLoading(false); isStreaming.current=false;
+      setTimeout(()=>inputRef.current?.focus(),80);
     }
-    update(dt) { 
-        this.x += this.vx * dt; 
-        this.y += this.vy * dt; 
-        this.alpha -= this.decay * dt; 
-        if (this.isFire && this.radius > 0.4) this.radius -= 1.8 * dt; 
-    }
-    draw() {
-        if (this.alpha <= 0) return;
-        ctx.save(); 
-        ctx.globalAlpha = this.alpha; 
-        ctx.fillStyle = this.color;
-        ctx.beginPath(); 
-        ctx.arc(this.x, this.y, Math.max(0.1, this.radius), 0, Math.PI * 2); 
-        ctx.fill(); 
-        ctx.restore();
-    }
+  };
+
+  const handleKey = e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} };
+  const canSend = !!input.trim()&&!loading;
+
+  return (
+    <>
+      {!ready && <IntroScreen onDone={()=>setReady(true)}/>}
+
+
+
+      <div style={{display:ready?"flex":"none",flexDirection:"column",height:"100vh",background:"white",color:"#1e293b",fontFamily:"'Segoe UI',system-ui,sans-serif",overflow:"hidden"}}>
+
+        {/* Header */}
+        <div style={{background:"white",borderBottom:"1.5px solid #f1f5f9",padding:"10px 16px",display:"flex",alignItems:"center",gap:12,flexShrink:0,boxShadow:"0 1px 12px rgba(0,0,0,0.05)"}}>
+
+          <div style={{position:"relative"}}>
+            <div style={{width:46,height:46,borderRadius:"50%",border:"2.5px solid #22C55E",overflow:"hidden",boxShadow:"0 2px 12px rgba(34,197,94,0.2)"}}>
+              <ApoAvatar size={46}/>
+            </div>
+            <div style={{position:"absolute",bottom:1,right:1,width:11,height:11,borderRadius:"50%",background:"#22C55E",border:"2px solid white"}}/>
+          </div>
+
+          <div style={{flex:1}}>
+            <div style={{fontWeight:900,fontSize:17,color:"#0f172a",letterSpacing:"-0.3px"}}>APO <span style={{color:"#22C55E"}}>⚽</span></div>
+            <div style={{fontSize:11,color:"#22C55E",display:"flex",alignItems:"center",gap:4}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:"#22C55E",display:"inline-block"}}/>
+              Online · Football Expert
+            </div>
+          </div>
+
+          {msgs.length>0 && (
+            <button onClick={newChat} style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:8,padding:"6px 12px",color:"#16a34a",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
+              + New
+            </button>
+          )}
+        </div>
+
+        {/* Messages */}
+        <div style={{flex:1,overflowY:"auto",padding:"20px 14px 10px",background:"#f8fafc"}}>
+          <div style={{maxWidth:680,margin:"0 auto"}}>
+            {msgs.length===0&&!loading&&(
+              <div style={{textAlign:"center",padding:"50px 20px 0"}}>
+                <div style={{width:90,height:90,borderRadius:"50%",overflow:"hidden",margin:"0 auto 18px",border:"3px solid #22C55E",boxShadow:"0 8px 28px rgba(34,197,94,0.2)"}}>
+                  <img src={APO_IMG} alt="APO" style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"top"}}/>
+                </div>
+                <div style={{fontSize:18,color:"#1e293b",fontWeight:800,marginBottom:6,letterSpacing:"-0.3px"}}>Hi, I'm APO! ⚽</div>
+                <div style={{fontSize:13,color:"#94a3b8",lineHeight:1.7}}>
+                  Ask me any football question you have. ⚽
+                </div>
+              </div>
+            )}
+
+            {msgs.map(msg=>(
+              <div key={msg.id} style={{display:"flex",gap:10,marginBottom:16,flexDirection:msg.role==="user"?"row-reverse":"row",alignItems:"flex-end"}}>
+                {msg.role==="assistant"
+                  ? <MiniApo/>
+                  : <div style={{width:34,height:34,borderRadius:"50%",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,color:"white",fontWeight:700,flexShrink:0}}>U</div>
+                }
+                <div style={{maxWidth:"80%"}}>
+                  <div style={{
+                    background:msg.role==="user"?"linear-gradient(135deg,#22C55E,#16a34a)":"white",
+                    borderRadius:msg.role==="user"?"18px 4px 18px 18px":"4px 18px 18px 18px",
+                    padding:"12px 15px",
+                    boxShadow:msg.role==="user"?"0 4px 14px rgba(34,197,94,0.25)":"0 2px 10px rgba(0,0,0,0.07)",
+                    border:msg.role==="assistant"?"1px solid #f1f5f9":"none",
+                  }}>
+                    {msg.role==="user"
+                      ? <p style={{margin:0,fontSize:14,lineHeight:1.7,color:"white"}}>{msg.content}</p>
+                      : <div>{renderMsg(msg.content)}</div>
+                    }
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {loading&&streamText&&(
+              <div style={{display:"flex",gap:10,marginBottom:16,alignItems:"flex-end"}}>
+                <MiniApo/>
+                <div style={{maxWidth:"80%",background:"white",border:"1px solid #f1f5f9",borderRadius:"4px 18px 18px 18px",padding:"12px 15px",boxShadow:"0 2px 10px rgba(0,0,0,0.07)"}}>
+                  {renderMsg(streamText)}
+                  <span style={{display:"inline-block",width:2,height:14,background:"#22C55E",verticalAlign:"middle",marginLeft:2,animation:"blink .7s ease infinite"}}/>
+                </div>
+              </div>
+            )}
+
+            {loading&&!streamText&&(
+              <div style={{display:"flex",gap:10,marginBottom:16,alignItems:"flex-end"}}>
+                <MiniApo/>
+                <div style={{background:"white",border:"1px solid #f1f5f9",borderRadius:"4px 18px 18px 18px",padding:"14px 18px",display:"flex",gap:5,boxShadow:"0 2px 10px rgba(0,0,0,0.07)"}}>
+                  {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",animation:`bounce 1.2s ease ${i*.2}s infinite`}}/>)}
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef}/>
+          </div>
+        </div>
+
+        {/* Input */}
+        <div style={{background:"white",borderTop:"1.5px solid #f1f5f9",padding:"10px 14px 16px",flexShrink:0}}>
+          <div style={{maxWidth:680,margin:"0 auto"}}>
+            <div style={{display:"flex",gap:8,alignItems:"flex-end",background:"#f8fafc",border:`1.5px solid ${canSend?"#22C55E":"#e2e8f0"}`,borderRadius:18,padding:"8px 12px",transition:"border-color .2s"}}>
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={e=>setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder="Ask your question..."
+                rows={1}
+                disabled={loading}
+                style={{flex:1,background:"transparent",border:"none",outline:"none",color:"#1e293b",fontSize:14,fontFamily:"inherit",resize:"none",lineHeight:1.6,maxHeight:100,overflowY:"auto"}}
+                onInput={e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";}}
+              />
+              <button onClick={send} disabled={!canSend}
+                style={{width:38,height:38,borderRadius:12,border:"none",background:canSend?"linear-gradient(135deg,#22C55E,#16a34a)":"#e2e8f0",color:"white",cursor:canSend?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0,transition:"all .18s",boxShadow:canSend?"0 4px 14px rgba(34,197,94,0.35)":"none"}}>
+                {loading?<Spin/>:"↑"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <style>{`
+          *{box-sizing:border-box;}
+          textarea::placeholder{color:#cbd5e1;}
+          ::-webkit-scrollbar{width:4px;}
+          ::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:4px;}
+          @keyframes bounce{0%,80%,100%{transform:scale(0.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+          @keyframes spin{to{transform:rotate(360deg)}}
+          @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+        `}</style>
+      </div>
+    </>
+  );
 }
 
-class EnemyCar {
-    constructor() {
-        this.jobSpec = spaceSectors[currentStageIndex];
-        this.width = (this.jobSpec.type === 'BIG_SIZE') ? 66 : 58;
-        this.height = (this.jobSpec.type === 'BIG_SIZE') ? 104 : 84;
-        
-        const lanes = [canvas.width * 0.23, canvas.width * 0.5, canvas.width * 0.77];
-        let targetLaneIndex = Math.floor(Math.random() * lanes.length);
-        if (targetLaneIndex === lastSpawnLane) {
-            targetLaneIndex = (targetLaneIndex + 1) % lanes.length;
-        }
-        lastSpawnLane = targetLaneIndex;
-        
-        this.x = lanes[targetLaneIndex];
-        this.y = -130;
-        
-        this.speed = baseRoadSpeed - 55 + (Math.random() * 60); 
-        this.passed = false;
-        this.cacheKey = this.jobSpec.key + '_' + currentStageIndex;
-    }
-    update(dt) { this.y += this.speed * dt; }
-    draw() {
-        const imgCache = vehicleCacheCanvases[this.cacheKey];
-        if (imgCache) {
-            ctx.drawImage(imgCache, this.x - this.width/2, this.y - this.height/2, this.width, this.height);
-        }
-    }
+function Spin() {
+  return <div style={{width:15,height:15,border:"2px solid rgba(255,255,255,.4)",borderTopColor:"white",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>;
 }
-
-function handleEnemies(dt) {
-    if (!isPaused && !isBurning) enemySpawnTimer += dt;
-    
-    let currentType = spaceSectors[currentStageIndex].type;
-    let baseInterval = (currentType === 'SPEED_OBSTACLE' || currentType === 'CHAOS') ? 0.42 : 0.80 - (realGameStageLevel * 0.09);
-    const spawnInterval = Math.max(0.28, baseInterval);
-    
-    if (enemySpawnTimer > spawnInterval && !isPaused && !isBurning) {
-        enemies.push(new EnemyCar());
-        enemySpawnTimer = 0;
-    }
-
-    for (let i = enemies.length - 1; i >= 0; i--) {
-        if (!isPaused && !isBurning) enemies[i].update(dt);
-        enemies[i].draw();
-
-        if (!enemies[i].passed && enemies[i].y > player.y + player.height / 2) {
-            enemies[i].passed = true;
-            score += 25;
-            checkStageProgression();
-        }
-
-        if (enemies[i].y > canvas.height + 130) {
-            enemies.splice(i, 1);
-            continue;
-        }
-
-        if (!isBurning && intersects(player.x, player.y, player.width, player.height, enemies[i].x, enemies[i].y, enemies[i].width, enemies[i].height)) {
-            triggerCarBurnEffect();
-            return;
-        }
-    }
-}
-
-function intersects(x1, y1, w1, h1, x2, y2, w2, h2) {
-    return x1 - w1/2.02 < x2 + w2/2.02 && x1 + w1/2.02 > x2 - w2/2.02 && y1 - h1/2.02 < y2 + h2/2.02 && y1 + h1/2.02 > y2 - h2/2.02;
-}
-
-function triggerCarBurnEffect() {
-    isBurning = true;
-    player.movingLeft = false;
-    player.movingRight = false;
-    playCosmicCrashSound();
-    
-    let burnCounter = 0;
-    const burnInterval = setInterval(() => {
-        for (let p = 0; p < 6; p++) {
-            particles.push(new ExplodeParticle(player.x + (Math.random()*20 - 10), player.y + (Math.random()*26 - 13), true));
-        }
-        burnCounter++;
-        if (burnCounter > 16) { 
-            clearInterval(burnInterval);
-            gameOver();
-        }
-    }, 45);
-}
-
-function drawRoad(dt) {
-    ctx.fillStyle = '#0a0d14'; // آسمان تاریک Astro Rogue
-    ctx.fillRect(canvas.width * 0.08, 0, canvas.width * 0.84, canvas.height);
-
-    const leftLimit = canvas.width * 0.08;
-    const rightLimit = canvas.width * 0.92 - 6;
-
-    updateAndDrawScenery(baseRoadSpeed, dt);
-
-    ctx.fillStyle = '#b026ff'; // خطوط نئونی بنفش کناره آسمان
-    ctx.fillRect(leftLimit, 0, 6, canvas.height);
-    ctx.fillRect(rightLimit, 0, 6, canvas.height);
-
-    if (isPlaying && !isPaused && !isBurning) {
-        if (player.x - player.width / 1.95 <= leftLimit + 6 || player.x + player.width / 1.95 >= rightLimit) {
-            triggerCarBurnEffect();
-            return;
-        }
-    }
-
-    ctx.fillStyle = 'rgba(0, 210, 255, 0.45)'; // خطوط کوانتومی وسط جاده آسمانی
-    if (!isPaused && !isBurning) roadLinesY = (roadLinesY + baseRoadSpeed * dt) % 70;
-
-    const lineX1 = canvas.width * 0.38 - 1.5;
-    const lineX2 = canvas.width * 0.62 - 1.5;
-    for (let y = roadLinesY - 70; y < canvas.height; y += 70) {
-        ctx.fillRect(lineX1, y, 3, 35);
-        ctx.fillRect(lineX2, y, 3, 35);
-    }
-}
-
-function startCountdown() {
-    welcomeScreen.style.display = 'none'; gameOverScreen.style.display = 'none'; pauseBtn.style.display = 'none';
-    countdownOverlay.style.display = 'flex'; aiBtn.style.display = 'none'; // 🔥 مخفی کردن دکمه در زمان شمارش
-    let states = ['3', '2', '1'];
-    let current = 0;
-    function nextTick() {
-        if (current < states.length) {
-            countdownText.innerText = states[current];
-            current++;
-            setTimeout(nextTick, 700); 
-        } else {
-            countdownOverlay.style.display = 'none';
-            playBeep();
-            isPlaying = true; isPaused = false; isBurning = false;
-            pauseBtn.innerText = "Pause"; pauseBtn.style.display = 'block';
-            aiBtn.style.display = 'block'; // 🔥 ظاهر کردن دکمه در زمان بازی
-            lastTime = performance.now();
-            musicTimer = 0; musicStep = 0;
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            animationFrameId = requestAnimationFrame(loop);
-        }
-    }
-    nextTick();
-}
-
-pauseBtn.addEventListener('click', () => {
-    if (isBurning) return;
-    isPaused = !isPaused;
-    pauseBtn.innerText = isPaused ? "Resume" : "Pause";
-    if (!isPaused) { 
-        lastTime = performance.now(); 
-        if (animationFrameId) cancelAnimationFrame(animationFrameId);
-        animationFrameId = requestAnimationFrame(loop); 
-    }
-});
-
-// 🔥 عملکرد دکمه هوش مصنوعی برای Deep Linking به تلگرام
-aiBtn.addEventListener('click', () => {
-    if (!isAiUnlocked) return; // اگر قفل باز نباشد کاری نکن
-    
-    playClickSound();
-    
-    // هدایت مستقیم کاربر به چت تلگرام ربات با دکمه استارت فعال
-    // آیدی ربات خودت را جایگزین "your_astro_rogue_bot_username" کن
-    const botUsername = "your_astro_rogue_bot_username"; 
-    const aiAccessParam = "ai_prompt_access"; // یک پارامتر که بات بفهمد قفل باز شده
-    
-    window.location.href = `https://t.me/${botUsername}?start=${aiAccessParam}`;
-});
-
-function gameOver() { 
-    isPlaying = false; 
-    pauseBtn.style.display = 'none'; 
-    aiBtn.style.display = 'none'; // 🔥 مخفی کردن دکمه AI زمان باخت
-    if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    gameOverScreen.style.display = 'flex'; 
-}
-
-function resetGame() {
-    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-    score = 0; currentStageIndex = 0; passedCarsCount = 0; lastSpawnLane = -1;
-    realGameStageLevel = 0;
-    baseRoadSpeed = 560;
-    playerSpeed = 590;
-    isBurning = false;
-    player.movingLeft = false;
-    player.movingRight = false;
-    
-    // 🔥 ریست کردن وضعیت دکمه هوش مصنوعی در هر بازی جدید
-    isAiUnlocked = false;
-    aiBtn.classList.remove('active');
-    aiBtn.innerText = "AI 🔒";
-    
-    updateScoreUI();
-    
-    resizeCanvas();
-    player.x = canvas.width / 2; player.y = 520; 
-    enemies = []; particles = []; enemySpawnTimer = -0.1;
-    initScenery();
-    startCountdown();
-}
-
-function loop(currentTime) {
-    if (!isPlaying || isPaused) return;
-    let dt = (currentTime - lastTime) / 1000;
-    if (dt > 0.05) dt = 0.016; 
-    lastTime = currentTime;
-    processInlineMusic(dt);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawRoad(dt);
-    if (isPlaying && !isPaused && !isBurning) {
-        if (player.movingLeft) player.x -= playerSpeed * dt;
-        if (player.movingRight) player.x += playerSpeed * dt;
-    }
-    if (!isBurning) {
-        const pCache = vehicleCacheCanvases['player'];
-        if (pCache) { ctx.drawImage(pCache, player.x - player.width/2, player.y - player.height/2, player.width, player.height); }
-    }
-    for (let i = particles.length - 1; i >= 0; i--) {
-        particles[i].update(dt); particles[i].draw();
-        if (particles[i].alpha <= 0) particles.splice(i, 1);
-    }
-    handleEnemies(dt);
-    if (isPlaying && !isPaused) animationFrameId = requestAnimationFrame(loop);
-}
-
-const btnLeft = document.getElementById('btnLeft'); const btnRight = document.getElementById('btnRight');
-btnLeft.addEventListener('mousedown', (e) => { if(!isPaused && !isBurning) { player.movingLeft = true; player.movingRight = false; playClickSound(); } });
-btnLeft.addEventListener('mouseup', () => player.movingLeft = false);
-btnLeft.addEventListener('mouseleave', () => player.movingLeft = false);
-btnLeft.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); if(!isPaused && !isBurning) { player.movingLeft = true; player.movingRight = false; playClickSound(); } }, { passive: false });
-btnLeft.addEventListener('touchend', (e) => { if (e.cancelable) e.preventDefault(); player.movingLeft = false; }, { passive: false });
-btnRight.addEventListener('mousedown', (e) => { if(!isPaused && !isBurning) { player.movingRight = true; player.movingLeft = false; playClickSound(); } });
-btnRight.addEventListener('mouseup', () => player.movingRight = false);
-btnRight.addEventListener('mouseleave', () => player.movingRight = false);
-btnRight.addEventListener('touchstart', (e) => { if (e.cancelable) e.preventDefault(); if(!isPaused && !isBurning) { player.movingRight = true; player.movingLeft = false; playClickSound(); } }, { passive: false });
-btnRight.addEventListener('touchend', (e) => { if (e.cancelable) e.preventDefault(); player.movingRight = false; }, { passive: false });
-startBtn.addEventListener('click', resetGame); restartBtn.addEventListener('click', resetGame);
-window.addEventListener('load', () => { resizeCanvas(); player.x = canvas.width / 2; player.y = 520; initScenery(); });
-</script>
-</body>
-</html>
